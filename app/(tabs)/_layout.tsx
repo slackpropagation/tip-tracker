@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx
+import 'react-native-get-random-values';
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
