@@ -1,14 +1,10 @@
+// app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#2f95dc",
-      }}
-    >
+    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: "#2f95dc" }}>
       <Tabs.Screen
         name="add-shift"
         options={{
