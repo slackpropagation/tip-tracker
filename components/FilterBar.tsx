@@ -13,7 +13,7 @@ export function FilterBar({
   return (
     <View style={{ gap: 10 }}>
       {/* Range row */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
         {(['7d','30d','all'] as RangeKey[]).map(k => (
           <Pressable
             key={k}
@@ -31,7 +31,7 @@ export function FilterBar({
       </View>
 
       {/* Shift type row */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
         {(['all','Brunch','Lunch','Dinner'] as ShiftKey[]).map(k => (
           <Pressable
             key={k}

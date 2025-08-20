@@ -1,10 +1,18 @@
 // app/(tabs)/insights.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Platform } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
-import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from '../../components/Victory';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
+
+// Conditional chart imports: victory for web, victory-native for native
+const {
+  VictoryAxis,
+  VictoryBar,
+  VictoryChart,
+  VictoryGroup,
+  VictoryLine,
+} = Platform.OS === 'web' ? require('victory') : require('victory-native');
 
 const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
   <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
@@ -18,8 +26,7 @@ function isInRange(dateStr: string, range: RangeKey) {
   if (range === 'all') return true;
   const today = new Date();
   const d = new Date(dateStr);
-  const ms = today.getTime() - d.getTime();
-  const days = ms / (1000 * 60 * 60 * 24);
+  const days = (today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
   return range === '7d' ? days <= 7 : days <= 30;
 }
 
@@ -194,8 +201,8 @@ export default function InsightsScreen() {
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
         <VictoryChart domainPadding={{ x: 16, y: 12 }}>
-          <VictoryAxis tickFormat={(t) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
-          <VictoryAxis dependentAxis tickFormat={(t) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
           <VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
         </VictoryChart>
       </View>
@@ -203,8 +210,8 @@ export default function InsightsScreen() {
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
         <VictoryChart domainPadding={{ x: 16, y: 12 }}>
-          <VictoryAxis tickFormat={(t) => t} style={{ tickLabels: { fontSize: 10 } }} />
-          <VictoryAxis dependentAxis tickFormat={(t) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
           <VictoryGroup>
             <VictoryBar data={dailySeries} x="x" y="tips" />
           </VictoryGroup>
@@ -213,23 +220,3 @@ export default function InsightsScreen() {
     </ScrollView>
   );
 }
-
---- components/Victory.web.ts ---
-export {
-  VictoryAxis,
-  VictoryBar,
-  VictoryChart,
-  VictoryGroup,
-  VictoryLine,
-  VictoryTheme,
-} from 'victory';
-
---- components/Victory.native.ts ---
-export {
-  VictoryAxis,
-  VictoryBar,
-  VictoryChart,
-  VictoryGroup,
-  VictoryLine,
-  VictoryTheme,
-} from 'victory-native';
