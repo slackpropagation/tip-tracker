@@ -26,7 +26,7 @@ export default function AddShiftScreen() {
   }), [cash, card, basis, pct, sales, overrideAmt]);
 
   const derived = useMemo(() => computeDerived({
-    hours_worked: hours, cash_tips: cash, card_tips: card, base_hourly_wage: baseWage, tip_out
+    hours_worked: hours, cash_tips: cash, card_tips: card, base_hourly_wage: baseWage, tipOut
   }), [hours, cash, card, baseWage, tipOut]);
 
   // Validation
