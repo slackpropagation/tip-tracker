@@ -1,5 +1,6 @@
 // app/(tabs)/insights.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, RefreshControl, Platform } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
@@ -58,6 +59,11 @@ export default function InsightsScreen() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load(); // refresh when tab/screen gains focus
+    }, [load])
+  );
 
   const filtered = useMemo(
     () => rows

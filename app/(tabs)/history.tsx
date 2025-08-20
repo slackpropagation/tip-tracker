@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, RefreshControl, Pressable } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
-import { getShifts } from '../../data/db';
+import { useCallback, useEffect, useState, useMemo } from 'react';
+import { View, Text, FlatList, RefreshControl, Pressable, Platform, Alert } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { getShifts, deleteShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 
 type Row = {
