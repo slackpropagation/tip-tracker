@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native'
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from '../../components/Victory';
+import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
 
 type RangeKey = '7d' | '30d' | 'all';
 
