@@ -18,14 +18,14 @@ export type ShiftRow = {
   notes: string | null;
 };
 
-const db = SQLite.openDatabase('tips.db');
+const dbNative = SQLite.openDatabase('tips.dbNative');
 
 function run<T = SQLite.SQLResultSet>(
   sql: string,
   params: (string | number | null)[] = []
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    db.transaction(tx => {
+    dbNative.transaction(tx => {
       tx.executeSql(
         sql,
         params,

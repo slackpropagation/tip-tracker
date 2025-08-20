@@ -1,4 +1,3 @@
-// app/(tabs)/settings.tsx
 import { View, Text, Button, ScrollView } from 'react-native';
 import { seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
 import { useState } from 'react';
