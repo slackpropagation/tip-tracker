@@ -1,32 +1,76 @@
-import { View, Text, Button, ScrollView } from 'react-native';
-import { seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
+// app/(tabs)/settings.tsx
+import { View, Text, Button, ScrollView, Platform } from 'react-native';
 import { useState } from 'react';
+import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
 
 export default function SettingsScreen() {
-  const [log, setLog] = useState<string>('');
+  const [log, setLog] = useState('');
 
-  const seed = async () => {
-    await seedSampleData();
-    setLog(prev => prev + '\nSeeded sample data');
+  const append = (msg: string) =>
+    setLog(prev => (prev ? prev + '\n' + msg : msg));
+
+  const handleInit = async () => {
+    if (Platform.OS === 'web') {
+      append('[Info] Web build: DB disabled (stub).');
+      return;
+    }
+    try {
+      await initDB();
+      append('[OK] initDB() ran');
+    } catch (e: any) {
+      append('[ERR] initDB: ' + (e?.message ?? String(e)));
+      console.error(e);
+    }
   };
 
-  const list = async () => {
-    const rows = await getShifts();
-    setLog(JSON.stringify(rows, null, 2));
-    console.log('[SHIFTS]', rows);
+  const handleSeed = async () => {
+    if (Platform.OS === 'web') {
+      append('[Info] Web build: seed disabled.');
+      return;
+    }
+    try {
+      await seedSampleData();
+      append('[OK] Seeded sample data');
+    } catch (e: any) {
+      append('[ERR] seed: ' + (e?.message ?? String(e)));
+      console.error(e);
+    }
   };
 
-  const wipe = async () => {
-    await deleteAllShifts();
-    setLog('All rows deleted');
+  const handleList = async () => {
+    try {
+      const rows = await getShifts();
+      append(`[OK] getShifts(): ${rows.length} rows`);
+      console.log('[SHIFTS]', rows);
+      append(JSON.stringify(rows, null, 2));
+    } catch (e: any) {
+      append('[ERR] list: ' + (e?.message ?? String(e)));
+      console.error(e);
+    }
+  };
+
+  const handleWipe = async () => {
+    if (Platform.OS === 'web') {
+      append('[Info] Web build: wipe disabled.');
+      return;
+    }
+    try {
+      await deleteAllShifts();
+      append('[OK] Deleted all shifts');
+    } catch (e: any) {
+      append('[ERR] wipe: ' + (e?.message ?? String(e)));
+      console.error(e);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
       <Text style={{ fontSize: 18, fontWeight: '600' }}>Developer Tools</Text>
-      <Button title="Seed sample data" onPress={seed} />
-      <Button title="List shifts (console + below)" onPress={list} />
-      <Button title="Delete ALL shifts" onPress={wipe} />
+      <Text>Platform: {Platform.OS}</Text>
+      <Button title="Init DB" onPress={handleInit} />
+      <Button title="Seed sample data" onPress={handleSeed} />
+      <Button title="List shifts" onPress={handleList} />
+      <Button title="Delete ALL shifts" onPress={handleWipe} />
       <Text selectable style={{ marginTop: 12, fontFamily: 'Courier' }}>{log}</Text>
     </ScrollView>
   );

@@ -1,3 +1,4 @@
+// data/db.web.js
 export async function initDB() {
   console.warn('[DB:web] SQLite disabled on web. Skipping init.');
 }
@@ -5,7 +6,7 @@ export async function insertShift() {
   throw new Error('[DB:web] insertShift not available on web.');
 }
 export async function getShifts() {
-  console.warn('[DB:web] getShifts returning empty array on web.');
+  console.warn('[DB:web] Returning empty array on web.');
   return [];
 }
 export async function updateShift() {
@@ -16,7 +17,4 @@ export async function deleteShift() {
 }
 export async function deleteAllShifts() {
   console.warn('[DB:web] deleteAllShifts noop.');
-}
-export async function seedSampleData() {
-  console.warn('[DB:web] seedSampleData noop.');
 }
