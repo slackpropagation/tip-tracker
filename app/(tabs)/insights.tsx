@@ -1,12 +1,10 @@
 // app/(tabs)/insights.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from '../../components/Victory';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
-
-type RangeKey = '7d' | '30d' | 'all';
 
 const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
   <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
@@ -25,6 +23,11 @@ function isInRange(dateStr: string, range: RangeKey) {
   return range === '7d' ? days <= 7 : days <= 30;
 }
 
+function isShiftMatch(type: string | null | undefined, want: ShiftKey) {
+  if (want === 'all') return true;
+  return (type || '') === want;
+}
+
 function formatDateLabel(d: Date) {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
@@ -33,6 +36,7 @@ function formatDateLabel(d: Date) {
 
 export default function InsightsScreen() {
   const [range, setRange] = useState<RangeKey>('30d');
+  const [shift, setShift] = useState<ShiftKey>('all');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +52,12 @@ export default function InsightsScreen() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = useMemo(() => rows.filter(r => isInRange(r.date, range)), [rows, range]);
+  const filtered = useMemo(
+    () => rows
+      .filter(r => isInRange(r.date, range))
+      .filter(r => isShiftMatch(r.shift_type, shift)),
+    [rows, range, shift]
+  );
 
   const metrics = useMemo(() => {
     if (filtered.length === 0) {
@@ -157,23 +166,8 @@ export default function InsightsScreen() {
     >
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      {/* Range selector */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        {(['7d', '30d', 'all'] as RangeKey[]).map(key => (
-          <Pressable
-            key={key}
-            onPress={() => setRange(key)}
-            style={{
-              paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20,
-              backgroundColor: range === key ? '#2f95dc' : '#f0f0f0'
-            }}
-          >
-            <Text style={{ color: range === key ? 'white' : 'black' }}>
-              {key === '7d' ? 'Last 7 days' : key === '30d' ? 'Last 30 days' : 'All time'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {/* Filters */}
+      <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
 
       {/* KPI rows */}
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -219,3 +213,23 @@ export default function InsightsScreen() {
     </ScrollView>
   );
 }
+
+--- components/Victory.web.ts ---
+export {
+  VictoryAxis,
+  VictoryBar,
+  VictoryChart,
+  VictoryGroup,
+  VictoryLine,
+  VictoryTheme,
+} from 'victory';
+
+--- components/Victory.native.ts ---
+export {
+  VictoryAxis,
+  VictoryBar,
+  VictoryChart,
+  VictoryGroup,
+  VictoryLine,
+  VictoryTheme,
+} from 'victory-native';
