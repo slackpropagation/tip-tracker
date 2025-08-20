@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from '../../components/Victory';
 
 type RangeKey = '7d' | '30d' | 'all';
 
@@ -21,6 +22,12 @@ function isInRange(dateStr: string, range: RangeKey) {
   const ms = today.getTime() - d.getTime();
   const days = ms / (1000 * 60 * 60 * 24);
   return range === '7d' ? days <= 7 : days <= 30;
+}
+
+function formatDateLabel(d: Date) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}-${dd}`;
 }
 
 export default function InsightsScreen() {
@@ -45,27 +52,13 @@ export default function InsightsScreen() {
   const metrics = useMemo(() => {
     if (filtered.length === 0) {
       return {
-        count: 0,
-        hours: 0,
-        tipsBase: 0,
-        tipOut: 0,
-        netTips: 0,
-        wages: 0,
-        gross: 0,
-        avgEffHourly: 0,
+        count: 0, hours: 0, tipsBase: 0, tipOut: 0, netTips: 0, wages: 0, gross: 0, avgEffHourly: 0,
         bestShiftType: null as null | { type: string; eff: number },
         bestDow: null as null | { dow: string; eff: number },
       };
     }
 
-    let count = 0;
-    let hours = 0;
-    let tipsBase = 0;
-    let tipOutSum = 0;
-    let netTips = 0;
-    let wages = 0;
-    let gross = 0;
-
+    let count = 0, hours = 0, tipsBase = 0, tipOutSum = 0, netTips = 0, wages = 0, gross = 0;
     const byType: Record<string, { effSum: number; hSum: number }> = {};
     const byDow: Record<number, { effSum: number; hSum: number }> = {};
 
@@ -130,6 +123,32 @@ export default function InsightsScreen() {
     };
   }, [filtered]);
 
+  // ---- Chart data prep (daily series) ----
+  const dailySeries = useMemo(() => {
+    const byDate = new Map<string, { eff: number; tips: number }>();
+    const sorted = [...filtered].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    for (const r of sorted) {
+      const m = computeShiftMetrics({
+        hours_worked: r.hours_worked,
+        cash_tips: r.cash_tips,
+        card_tips: r.card_tips,
+        base_hourly_wage: r.base_hourly_wage,
+        tip_out_basis: r.tip_out_basis,
+        tip_out_percent: r.tip_out_percent,
+        sales: r.sales,
+        tip_out_override_amount: r.tip_out_override_amount,
+      });
+      const baseTips = (r.cash_tips || 0) + (r.card_tips || 0);
+      const prev = byDate.get(r.date) || { eff: 0, tips: 0 };
+      // If multiple shifts per day, average eff/hr and sum tips
+      const merged = { eff: prev.eff ? (prev.eff + m.effective_hourly) / 2 : m.effective_hourly, tips: prev.tips + baseTips };
+      byDate.set(r.date, merged);
+    }
+    return Array.from(byDate.entries()).map(([date, v]) => ({
+      x: formatDateLabel(new Date(date)), eff: Number(v.eff.toFixed(2)), tips: Number(v.tips.toFixed(2)),
+    }));
+  }, [filtered]);
+
   return (
     <ScrollView
       contentContainerStyle={{ padding: 16, gap: 14 }}
@@ -176,20 +195,26 @@ export default function InsightsScreen() {
         <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Card
-          title="Best shift type"
-          value={metrics.bestShiftType ? `${metrics.bestShiftType.type}` : '—'}
-          subtitle={metrics.bestShiftType ? `$${metrics.bestShiftType.eff.toFixed(2)}/hr` : undefined}
-        />
-        <Card
-          title="Best day"
-          value={metrics.bestDow ? metrics.bestDow.dow : '—'}
-          subtitle={metrics.bestDow ? `$${metrics.bestDow.eff.toFixed(2)}/hr` : undefined}
-        />
+      {/* ---- Charts ---- */}
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+        </VictoryChart>
       </View>
 
-      {/* (Step 10: we will add charts here) */}
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryGroup>
+            <VictoryBar data={dailySeries} x="x" y="tips" />
+          </VictoryGroup>
+        </VictoryChart>
+      </View>
     </ScrollView>
   );
 }
