@@ -20,7 +20,8 @@ function confirmDelete(msg: string) {
 const sanitize = (s: string) => (s ?? '').toString().replace(/[^\d.,\-]/g, '').replace(',', '.');
 
 export default function ShiftDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams();
+  const idParam = (Array.isArray(params.id) ? params.id[0] : params.id) as string;
   const [rowData, setRowData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -41,7 +42,7 @@ export default function ShiftDetail() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const r = await getShiftById(id);
+      const r = await getShiftById(idParam);
       setRowData(r ?? null);
       if (r) {
         setDate(r.date ?? '');
@@ -58,7 +59,7 @@ export default function ShiftDetail() {
       }
       setLoading(false);
     })();
-  }, [id]);
+  }, [idParam]);
 
   const metrics = useMemo(() => computeShiftMetrics({
     hours_worked: hours,
@@ -102,38 +103,40 @@ export default function ShiftDetail() {
     if (!date) errors.push('Date required');
   }
 
-  const onSave = async () => {
-    if (errors.length) return;
-    await updateShift(String(id), {
-      date,
-      shift_type: shiftType,
-      hours_worked: Number(sanitize(hours)) || 0,
-      cash_tips: Number(sanitize(cash)) || 0,
-      card_tips: Number(sanitize(card)) || 0,
-      tip_out_basis: basis,
-      tip_out_percent: Number(sanitize(pct)) || 0,
-      sales: basis === 'sales' ? (Number(sanitize(sales)) || 0) : null,
-      tip_out_override_amount: overrideAmt ? (Number(sanitize(overrideAmt)) || 0) : null,
-      base_hourly_wage: Number(sanitize(baseWage)) || 0,
-      notes: notes || null,
-    });
-    setEditing(false);
-    // Reload to reflect saved values
-    const fresh = await getShiftById(id);
-    setRowData(fresh);
-  };
+const onSave = async () => {
+  if (errors.length) return;
+
+  await updateShift(String(idParam), {
+    date,
+    shift_type: shiftType,
+    hours_worked: Number(sanitize(hours)) || 0,
+    cash_tips: Number(sanitize(cash)) || 0,
+    card_tips: Number(sanitize(card)) || 0,
+    tip_out_basis: basis,
+    tip_out_percent: Number(sanitize(pct)) || 0,
+    sales: basis === 'sales' ? (Number(sanitize(sales)) || 0) : null,
+    tip_out_override_amount: overrideAmt ? (Number(sanitize(overrideAmt)) || 0) : null,
+    base_hourly_wage: Number(sanitize(baseWage)) || 0,
+    notes: notes || null,
+  });
+
+  router.replace('/history');
+};
 
   const onDelete = async () => {
     const ok = confirmDelete('Delete this shift permanently?');
     if (!ok) return;
-    await deleteShift(String(id));
+    await deleteShift(String(idParam));
     router.back();
   };
 
   return (
     <ScrollView contentContainerStyle={{ padding:16, gap:12 }}>
-      <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center' }}>
-        <Text style={{ fontSize:20, fontWeight:'700' }}>
+      <View style={{ flexDirection:'row', alignItems:'center', gap: 8, justifyContent:'space-between' }}>
+        <Pressable onPress={() => router.back()} style={{ paddingVertical:8, paddingHorizontal:8 }}>
+          <Text style={{ color:'#2f95dc' }}>Back</Text>
+        </Pressable>
+        <Text style={{ fontSize:20, fontWeight:'700', flex:1, textAlign:'center' }}>
           {rowData.date} • {rowData.shift_type}
         </Text>
         {!editing ? (

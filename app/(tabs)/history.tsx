@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, RefreshControl, Pressable } from 'react-native';
-import { Link } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 
@@ -35,6 +35,17 @@ export default function HistoryScreen() {
 
   useEffect(() => { load(); }, [load]);
 
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        const data = await getShifts();
+        if (active) setRows(data);
+      })();
+      return () => { active = false; };
+    }, [])
+  );
+
   const renderItem = ({ item }: { item: Row }) => {
     const m = computeShiftMetrics({
       hours_worked: item.hours_worked,
@@ -47,19 +58,18 @@ export default function HistoryScreen() {
       tip_out_override_amount: item.tip_out_override_amount,
     });
     return (
-      <Link href={`/shift/${item.id}`} asChild>
-        <Pressable style={{
-          padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee'
-        }}>
-          <Text style={{ fontWeight: '600' }}>
-            {item.date} • {item.shift_type}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
-            <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
-            <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
-          </View>
-        </Pressable>
-      </Link>
+      <Pressable
+        onPress={() => router.push(`/shift/${item.id}`)}
+        style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+      >
+        <Text style={{ fontWeight: '600' }}>
+          {item.date} • {item.shift_type}
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
+          <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
+          <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
+        </View>
+      </Pressable>
     );
   };
 
