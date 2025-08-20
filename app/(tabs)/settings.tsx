@@ -1,5 +1,4 @@
-// app/(tabs)/settings.tsx
-import { View, Text, Button, ScrollView, Platform } from 'react-native';
+import { View, Text, Button, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
 
@@ -10,10 +9,6 @@ export default function SettingsScreen() {
     setLog(prev => (prev ? prev + '\n' + msg : msg));
 
   const handleInit = async () => {
-    if (Platform.OS === 'web') {
-      append('[Info] Web build: DB disabled (stub).');
-      return;
-    }
     try {
       await initDB();
       append('[OK] initDB() ran');
@@ -24,10 +19,6 @@ export default function SettingsScreen() {
   };
 
   const handleSeed = async () => {
-    if (Platform.OS === 'web') {
-      append('[Info] Web build: seed disabled.');
-      return;
-    }
     try {
       await seedSampleData();
       append('[OK] Seeded sample data');
@@ -50,10 +41,6 @@ export default function SettingsScreen() {
   };
 
   const handleWipe = async () => {
-    if (Platform.OS === 'web') {
-      append('[Info] Web build: wipe disabled.');
-      return;
-    }
     try {
       await deleteAllShifts();
       append('[OK] Deleted all shifts');
@@ -66,7 +53,6 @@ export default function SettingsScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
       <Text style={{ fontSize: 18, fontWeight: '600' }}>Developer Tools</Text>
-      <Text>Platform: {Platform.OS}</Text>
       <Button title="Init DB" onPress={handleInit} />
       <Button title="Seed sample data" onPress={handleSeed} />
       <Button title="List shifts" onPress={handleList} />

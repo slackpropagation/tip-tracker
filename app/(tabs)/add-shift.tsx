@@ -20,6 +20,8 @@ export default function AddShiftScreen() {
   const [baseWage, setBaseWage] = useState<string>(''); // required per shift (no default)
   const [notes, setNotes] = useState<string>('');
 
+  const sanitize = (s: string) => s.replace(/[^\d.,\-]/g, '').replace(',', '.');
+
   // Live math preview
   const tipOut = useMemo(() => computeTipOut({
     cash_tips: cash, card_tips: card, tip_out_basis: basis, tip_out_percent: pct, sales, tip_out_override_amount: overrideAmt
@@ -97,7 +99,13 @@ const derived = useMemo(() => computeDerived({
       {/* Hours */}
       <View style={fieldBox}>
         <Text style={{ fontWeight: '600', marginBottom: 4 }}>Hours Worked</Text>
-        <TextInput value={hours} onChangeText={setHours} placeholder="6.5" keyboardType="decimal-pad" />
+        <TextInput
+          value={hours}
+          onChangeText={(v) => setHours(sanitize(v))}
+          placeholder="6.5"
+          keyboardType="decimal-pad"
+          inputMode="decimal"
+        />
       </View>
 
       {/* Tips */}
@@ -106,11 +114,23 @@ const derived = useMemo(() => computeDerived({
         <View style={row}>
           <View style={{ flex: 1 }}>
             <Text>Cash</Text>
-            <TextInput value={cash} onChangeText={setCash} placeholder="120" keyboardType="decimal-pad" />
+            <TextInput
+              value={cash}
+              onChangeText={(v) => setCash(sanitize(v))}
+              placeholder="120"
+              keyboardType="decimal-pad"
+              inputMode="decimal"
+            />
           </View>
           <View style={{ flex: 1 }}>
             <Text>Card</Text>
-            <TextInput value={card} onChangeText={setCard} placeholder="280" keyboardType="decimal-pad" />
+            <TextInput
+              value={card}
+              onChangeText={(v) => setCard(sanitize(v))}
+              placeholder="280"
+              keyboardType="decimal-pad"
+              inputMode="decimal"
+            />
           </View>
         </View>
       </View>
@@ -130,17 +150,35 @@ const derived = useMemo(() => computeDerived({
         </View>
         <View style={{ marginTop: 8 }}>
           <Text>Percent (%)</Text>
-          <TextInput value={pct} onChangeText={setPct} placeholder="3" keyboardType="decimal-pad" />
+          <TextInput
+            value={pct}
+            onChangeText={(v) => setPct(sanitize(v))}
+            placeholder="3"
+            keyboardType="decimal-pad"
+            inputMode="decimal"
+          />
         </View>
         {basis === 'sales' && (
           <View style={{ marginTop: 8 }}>
             <Text>Sales</Text>
-            <TextInput value={sales} onChangeText={setSales} placeholder="1000" keyboardType="decimal-pad" />
+            <TextInput
+              value={sales}
+              onChangeText={(v) => setSales(sanitize(v))}
+              placeholder="1000"
+              keyboardType="decimal-pad"
+              inputMode="decimal"
+            />
           </View>
         )}
         <View style={{ marginTop: 8 }}>
           <Text>Override amount (optional)</Text>
-          <TextInput value={overrideAmt} onChangeText={setOverrideAmt} placeholder="50" keyboardType="decimal-pad" />
+          <TextInput
+            value={overrideAmt}
+            onChangeText={(v) => setOverrideAmt(sanitize(v))}
+            placeholder="50"
+            keyboardType="decimal-pad"
+            inputMode="decimal"
+          />
         </View>
         <Text style={{ marginTop: 8 }}>Calculated tip-out: ${tipOut.toFixed(2)}</Text>
       </View>
@@ -148,13 +186,26 @@ const derived = useMemo(() => computeDerived({
       {/* Base wage */}
       <View style={fieldBox}>
         <Text style={{ fontWeight: '600', marginBottom: 4 }}>Base hourly wage</Text>
-        <TextInput value={baseWage} onChangeText={setBaseWage} placeholder="5" keyboardType="decimal-pad" />
+        <TextInput
+          value={baseWage}
+          onChangeText={(v) => setBaseWage(sanitize(v))}
+          placeholder="5"
+          keyboardType="decimal-pad"
+          inputMode="decimal"
+        />
       </View>
 
       {/* Notes */}
       <View style={fieldBox}>
         <Text style={{ fontWeight: '600', marginBottom: 4 }}>Notes (optional)</Text>
         <TextInput value={notes} onChangeText={setNotes} placeholder="#patio #tourists" />
+      </View>
+
+      {/* Debug (temp) */}
+      <View style={{ ...fieldBox, backgroundColor: '#fff8e1' }}>
+        <Text style={{ fontWeight: '600', marginBottom: 4 }}>Debug (temp)</Text>
+        <Text>hours raw: “{hours}” → parsed: {Number(hours.replace(',', '.')) || 0}</Text>
+        <Text>base wage raw: “{baseWage}” → parsed: {Number(baseWage.replace(',', '.')) || 0}</Text>
       </View>
 
       {/* Live preview */}
