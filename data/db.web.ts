@@ -69,3 +69,8 @@ export async function seedSampleData() {
   await writeAll([]); // clear
   for (const row of sample) await insertShift(row);
 }
+
+export async function getShiftById(id) {
+  const rows = await getShifts(); // web: fine; native: you can also do SELECT WHERE id = ?
+  return rows.find(r => r.id === id) || null;
+}

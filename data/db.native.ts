@@ -86,3 +86,8 @@ export async function deleteShift(id) {
 export async function deleteAllShifts() {
   await run(`DELETE FROM shifts`);
 }
+
+export async function getShiftById(id) {
+  const rows = await getShifts(); // web: fine; native: you can also do SELECT WHERE id = ?
+  return rows.find(r => r.id === id) || null;
+}
