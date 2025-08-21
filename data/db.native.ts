@@ -1,5 +1,5 @@
 // data/db.native.js
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite/legacy';
 import { v4 as uuidv4 } from 'uuid';
 
 const db = SQLite.openDatabase('tips.db');
