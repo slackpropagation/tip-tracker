@@ -1,11 +1,11 @@
-// app/(tabs)/insights.tsx
+// app/(tabs)/insights.web.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
-import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from 'victory-native';
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from 'victory';
 
 const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
   <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
@@ -98,16 +98,14 @@ export default function InsightsScreen() {
       wages += m.wages_earned;
       gross += m.shift_gross;
 
-      // shift type eff/hr (weighted by hours)
       const eff = m.effective_hourly;
       const t = r.shift_type || 'Unknown';
       byType[t] = byType[t] || { effSum: 0, hSum: 0 };
       byType[t].effSum += eff * (r.hours_worked || 0);
       byType[t].hSum += (r.hours_worked || 0);
 
-      // day-of-week eff/hr (weighted by hours)
       const d = new Date(r.date);
-      const dow = d.getDay(); // 0-6
+      const dow = d.getDay();
       byDow[dow] = byDow[dow] || { effSum: 0, hSum: 0 };
       byDow[dow].effSum += eff * (r.hours_worked || 0);
       byDow[dow].hSum += (r.hours_worked || 0);
@@ -138,7 +136,6 @@ export default function InsightsScreen() {
     };
   }, [filtered]);
 
-  // ---- Chart data prep (daily series) ----
   const dailySeries = useMemo(() => {
     const byDate = new Map<string, { eff: number; tips: number }>();
     const sorted = [...filtered].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -155,7 +152,6 @@ export default function InsightsScreen() {
       });
       const baseTips = (r.cash_tips || 0) + (r.card_tips || 0);
       const prev = byDate.get(r.date) || { eff: 0, tips: 0 };
-      // If multiple shifts per day, average eff/hr and sum tips
       const merged = { eff: prev.eff ? (prev.eff + m.effective_hourly) / 2 : m.effective_hourly, tips: prev.tips + baseTips };
       byDate.set(r.date, merged);
     }
@@ -171,10 +167,8 @@ export default function InsightsScreen() {
     >
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      {/* Filters */}
       <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
 
-      {/* KPI rows */}
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Card title="Shifts" value={String(metrics.count)} />
         <Card title="Hours" value={String(metrics.hours)} />
@@ -195,7 +189,6 @@ export default function InsightsScreen() {
         <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
       </View>
 
-      {/* ---- Charts ---- */}
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
         <VictoryChart domainPadding={{ x: 16, y: 12 }}>
