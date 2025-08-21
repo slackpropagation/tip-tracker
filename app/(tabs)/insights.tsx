@@ -54,39 +54,7 @@ export default function InsightsScreen() {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-// ...top of component...
 const V = useVictory();
-
-// ...later in JSX...
-{/* KPI rows etc. remain always visible */}
-
-{V ? (
-  <>
-    <View style={{ marginTop: 8 }}>
-      <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
-      <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-        <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
-        <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-        <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
-      </V.VictoryChart>
-    </View>
-
-    <View style={{ marginTop: 8 }}>
-      <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
-      <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-        <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-        <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-        <V.VictoryGroup>
-          <V.VictoryBar data={dailySeries} x="x" y="tips" />
-        </V.VictoryGroup>
-      </V.VictoryChart>
-    </View>
-  </>
-) : (
-  <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
-    <Text>Loading charts…</Text>
-  </View>
-)}
 
   const load = useCallback(async () => {
     setLoading(true);
