@@ -5,7 +5,21 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
-import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from 'victory-native';
+
+// Lazy-load victory-native to avoid undefined component issues during module init
+type VictoryMod = typeof import('victory-native');
+const useVictory = () => {
+  const [mod, setMod] = useState<VictoryMod | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const m = await import('victory-native');
+      if (mounted) setMod(m);
+    })();
+    return () => { mounted = false; };
+  }, []);
+  return mod;
+};
 
 const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
   <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
@@ -39,6 +53,40 @@ export default function InsightsScreen() {
   const [shift, setShift] = useState<ShiftKey>('all');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+// ...top of component...
+const V = useVictory();
+
+// ...later in JSX...
+{/* KPI rows etc. remain always visible */}
+
+{V ? (
+  <>
+    <View style={{ marginTop: 8 }}>
+      <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
+      <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+        <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+        <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+        <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+      </V.VictoryChart>
+    </View>
+
+    <View style={{ marginTop: 8 }}>
+      <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
+      <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+        <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+        <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+        <V.VictoryGroup>
+          <V.VictoryBar data={dailySeries} x="x" y="tips" />
+        </V.VictoryGroup>
+      </V.VictoryChart>
+    </View>
+  </>
+) : (
+  <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+    <Text>Loading charts…</Text>
+  </View>
+)}
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -189,24 +237,30 @@ export default function InsightsScreen() {
         <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
       </View>
 
+      { !V ? (
+          <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+            <Text>Loading charts…</Text>
+          </View>
+        ) : null }
+
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
-        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
-          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
-          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-          <VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
-        </VictoryChart>
+        <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+          <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+        </V.VictoryChart>
       </View>
 
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
-        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
-          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-          <VictoryGroup>
-            <VictoryBar data={dailySeries} x="x" y="tips" />
-          </VictoryGroup>
-        </VictoryChart>
+        <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <V.VictoryGroup>
+            <V.VictoryBar data={dailySeries} x="x" y="tips" />
+          </V.VictoryGroup>
+        </V.VictoryChart>
       </View>
     </ScrollView>
   );
