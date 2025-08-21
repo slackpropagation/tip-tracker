@@ -1,0 +1,220 @@
+// app/(tabs)/insights.native.tsx
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { getShifts } from '../../data/db';
+import { computeShiftMetrics } from '../../data/calculations';
+import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from 'victory-native';
+
+const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
+  <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
+    <Text style={{ fontSize: 12, color: '#666' }}>{title}</Text>
+    <Text style={{ fontSize: 20, fontWeight: '700', marginTop: 6 }}>{value}</Text>
+    {subtitle ? <Text style={{ marginTop: 4, color: '#777' }}>{subtitle}</Text> : null}
+  </View>
+);
+
+function isInRange(dateStr: string, range: RangeKey) {
+  if (range === 'all') return true;
+  const today = new Date();
+  const d = new Date(dateStr);
+  const days = (today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+  return range === '7d' ? days <= 7 : days <= 30;
+}
+
+function isShiftMatch(type: string | null | undefined, want: ShiftKey) {
+  if (want === 'all') return true;
+  return (type || '') === want;
+}
+
+function formatDateLabel(d: Date) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}-${dd}`;
+}
+
+export default function InsightsScreen() {
+  const [range, setRange] = useState<RangeKey>('30d');
+  const [shift, setShift] = useState<ShiftKey>('all');
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getShifts();
+      setRows(data);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load(); // refresh when tab/screen gains focus
+    }, [load])
+  );
+
+  const filtered = useMemo(
+    () => rows
+      .filter(r => isInRange(r.date, range))
+      .filter(r => isShiftMatch(r.shift_type, shift)),
+    [rows, range, shift]
+  );
+
+  const metrics = useMemo(() => {
+    if (filtered.length === 0) {
+      return {
+        count: 0, hours: 0, tipsBase: 0, tipOut: 0, netTips: 0, wages: 0, gross: 0, avgEffHourly: 0,
+        bestShiftType: null as null | { type: string; eff: number },
+        bestDow: null as null | { dow: string; eff: number },
+      };
+    }
+
+    let count = 0, hours = 0, tipsBase = 0, tipOutSum = 0, netTips = 0, wages = 0, gross = 0;
+    const byType: Record<string, { effSum: number; hSum: number }> = {};
+    const byDow: Record<number, { effSum: number; hSum: number }> = {};
+
+    for (const r of filtered) {
+      const m = computeShiftMetrics({
+        hours_worked: r.hours_worked,
+        cash_tips: r.cash_tips,
+        card_tips: r.card_tips,
+        base_hourly_wage: r.base_hourly_wage,
+        tip_out_basis: r.tip_out_basis,
+        tip_out_percent: r.tip_out_percent,
+        sales: r.sales,
+        tip_out_override_amount: r.tip_out_override_amount,
+      });
+
+      count += 1;
+      hours += r.hours_worked || 0;
+      const base = (r.cash_tips || 0) + (r.card_tips || 0);
+      tipsBase += base;
+      tipOutSum += m.tip_out;
+      netTips += m.net_tips;
+      wages += m.wages_earned;
+      gross += m.shift_gross;
+
+      // shift type eff/hr (weighted by hours)
+      const eff = m.effective_hourly;
+      const t = r.shift_type || 'Unknown';
+      byType[t] = byType[t] || { effSum: 0, hSum: 0 };
+      byType[t].effSum += eff * (r.hours_worked || 0);
+      byType[t].hSum += (r.hours_worked || 0);
+
+      // day-of-week eff/hr (weighted by hours)
+      const d = new Date(r.date);
+      const dow = d.getDay(); // 0-6
+      byDow[dow] = byDow[dow] || { effSum: 0, hSum: 0 };
+      byDow[dow].effSum += eff * (r.hours_worked || 0);
+      byDow[dow].hSum += (r.hours_worked || 0);
+    }
+
+    const avgEffHourly = hours > 0 ? +(gross / hours).toFixed(2) : 0;
+
+    const bestShiftType = Object.entries(byType)
+      .map(([type, v]) => ({ type, eff: v.hSum > 0 ? v.effSum / v.hSum : 0 }))
+      .sort((a, b) => b.eff - a.eff)[0] || null;
+
+    const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const bestDowEntry = Object.entries(byDow)
+      .map(([k, v]) => ({ dow: dowNames[Number(k)], eff: v.hSum > 0 ? v.effSum / v.hSum : 0 }))
+      .sort((a, b) => b.eff - a.eff)[0] || null;
+
+    return {
+      count,
+      hours: +hours.toFixed(2),
+      tipsBase: +tipsBase.toFixed(2),
+      tipOut: +tipOutSum.toFixed(2),
+      netTips: +netTips.toFixed(2),
+      wages: +wages.toFixed(2),
+      gross: +gross.toFixed(2),
+      avgEffHourly,
+      bestShiftType,
+      bestDow: bestDowEntry,
+    };
+  }, [filtered]);
+
+  // ---- Chart data prep (daily series) ----
+  const dailySeries = useMemo(() => {
+    const byDate = new Map<string, { eff: number; tips: number }>();
+    const sorted = [...filtered].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    for (const r of sorted) {
+      const m = computeShiftMetrics({
+        hours_worked: r.hours_worked,
+        cash_tips: r.cash_tips,
+        card_tips: r.card_tips,
+        base_hourly_wage: r.base_hourly_wage,
+        tip_out_basis: r.tip_out_basis,
+        tip_out_percent: r.tip_out_percent,
+        sales: r.sales,
+        tip_out_override_amount: r.tip_out_override_amount,
+      });
+      const baseTips = (r.cash_tips || 0) + (r.card_tips || 0);
+      const prev = byDate.get(r.date) || { eff: 0, tips: 0 };
+      // If multiple shifts per day, average eff/hr and sum tips
+      const merged = { eff: prev.eff ? (prev.eff + m.effective_hourly) / 2 : m.effective_hourly, tips: prev.tips + baseTips };
+      byDate.set(r.date, merged);
+    }
+    return Array.from(byDate.entries()).map(([date, v]) => ({
+      x: formatDateLabel(new Date(date)), eff: Number(v.eff.toFixed(2)), tips: Number(v.tips.toFixed(2)),
+    }));
+  }, [filtered]);
+
+  return (
+    <ScrollView
+      contentContainerStyle={{ padding: 16, gap: 14 }}
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+    >
+      <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
+
+      {/* Filters */}
+      <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
+
+      {/* KPI rows */}
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card title="Shifts" value={String(metrics.count)} />
+        <Card title="Hours" value={String(metrics.hours)} />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card title="Total tips" value={`$${metrics.tipsBase.toFixed(2)}`} subtitle="Cash + Card" />
+        <Card title="Tip-out total" value={`$${metrics.tipOut.toFixed(2)}`} />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card title="Net tips" value={`$${metrics.netTips.toFixed(2)}`} />
+        <Card title="Wages" value={`$${metrics.wages.toFixed(2)}`} />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card title="Gross" value={`$${metrics.gross.toFixed(2)}`} />
+        <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
+      </View>
+
+      {/* ---- Charts ---- */}
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+        </VictoryChart>
+      </View>
+
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryGroup>
+            <VictoryBar data={dailySeries} x="x" y="tips" />
+          </VictoryGroup>
+        </VictoryChart>
+      </View>
+    </ScrollView>
+  );
+}

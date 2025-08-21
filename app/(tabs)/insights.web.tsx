@@ -1,19 +1,11 @@
-// app/(tabs)/insights.tsx
+// app/(tabs)/insights.native.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { View, Text, ScrollView, RefreshControl, Platform } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
-
-// Conditional chart imports: victory for web, victory-native for native
-const {
-  VictoryAxis,
-  VictoryBar,
-  VictoryChart,
-  VictoryGroup,
-  VictoryLine,
-} = Platform.OS === 'web' ? require('victory') : require('victory-native');
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine } from 'victory';
 
 const Card = ({ title, value, subtitle }: { title: string; value: string; subtitle?: string }) => (
   <View style={{ padding: 14, borderWidth: 1, borderColor: '#eee', borderRadius: 10, minWidth: 140, flex: 1 }}>
