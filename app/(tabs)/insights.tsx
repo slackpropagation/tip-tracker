@@ -211,6 +211,8 @@ const V = useVictory();
           </View>
         ) : null }
 
+      {V && (
+        <>
       <View style={{ marginTop: 8 }}>
         <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
         <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
@@ -230,6 +232,8 @@ const V = useVictory();
           </V.VictoryGroup>
         </V.VictoryChart>
       </View>
+      </>
+      )}
     </ScrollView>
   );
 }
