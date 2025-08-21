@@ -1,4 +1,4 @@
-// app/(tabs)/insights.native.tsx
+// app/(tabs)/insights.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
