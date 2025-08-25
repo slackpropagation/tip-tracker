@@ -53,13 +53,44 @@ function formatDateLabel(d: Date) {
   return `${mm}-${dd}`;
 }
 
+type StartOfWeek = 'sun' | 'mon';
+
+function getStartOfWeekSetting(): StartOfWeek {
+  // Try extensionless settings (native later), fall back to web, else default 'sun'
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const S = require('../../data/settings');
+    const val = (S.get && S.get('startOfWeek')) || (S.getAll && S.getAll().startOfWeek);
+    return (val === 'mon' ? 'mon' : 'sun');
+  } catch {}
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Sweb = require('../../data/settings.web');
+    const val = (Sweb.get && Sweb.get('startOfWeek')) || (Sweb.getAll && Sweb.getAll().startOfWeek);
+    return (val === 'mon' ? 'mon' : 'sun');
+  } catch {}
+  return 'sun';
+}
+
+function startOfWeek(date: Date, sow: StartOfWeek): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay(); // 0=Sun ... 6=Sat
+  const offset = sow === 'sun' ? day : (day === 0 ? 6 : day - 1);
+  d.setDate(d.getDate() - offset);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export default function InsightsScreen() {
   const [range, setRange] = useState<RangeKey>('30d');
   const [shift, setShift] = useState<ShiftKey>('all');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-const V = useVictory();
+  const V = useVictory();
+
+  const sow = getStartOfWeekSetting();
+  const thisWeekStartKey = startOfWeek(new Date(), sow).toDateString();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -91,10 +122,12 @@ const V = useVictory();
         count: 0, hours: 0, tipsBase: 0, tipOut: 0, netTips: 0, wages: 0, gross: 0, avgEffHourly: 0,
         bestShiftType: null as null | { type: string; eff: number },
         bestDow: null as null | { dow: string; eff: number },
+        thisWeekGross: 0,
       };
     }
 
     let count = 0, hours = 0, tipsBase = 0, tipOutSum = 0, netTips = 0, wages = 0, gross = 0;
+    let thisWeekGross = 0;
     const byType: Record<string, { effSum: number; hSum: number }> = {};
     const byDow: Record<number, { effSum: number; hSum: number }> = {};
 
@@ -118,6 +151,11 @@ const V = useVictory();
       netTips += m.net_tips;
       wages += m.wages_earned;
       gross += m.shift_gross;
+
+      const rWeekKey = startOfWeek(new Date(r.date), sow).toDateString();
+      if (rWeekKey === thisWeekStartKey) {
+        thisWeekGross += m.shift_gross;
+      }
 
       const eff = m.effective_hourly;
       const t = r.shift_type || 'Unknown';
@@ -154,8 +192,9 @@ const V = useVictory();
       avgEffHourly,
       bestShiftType,
       bestDow: bestDowEntry,
+      thisWeekGross: +thisWeekGross.toFixed(2),
     };
-  }, [filtered]);
+  }, [filtered, sow, thisWeekStartKey]);
 
   const dailySeries = useMemo(() => {
     const byDate = new Map<string, { eff: number; tips: number }>();
@@ -214,6 +253,10 @@ const V = useVictory();
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Card title="Gross" value={`$${metrics.gross.toFixed(2)}`} />
         <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card title="This week gross" value={`$${metrics.thisWeekGross.toFixed(2)}`} subtitle={sow === 'mon' ? 'Week starts Mon' : 'Week starts Sun'} />
       </View>
 
       { !V ? (
