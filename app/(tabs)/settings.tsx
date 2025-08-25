@@ -1,6 +1,6 @@
 import { View, Text, Button, ScrollView, TextInput, Pressable, Switch } from 'react-native';
 import { useState, useEffect } from 'react';
-import { getAll, set, defaults } from '../../data/settings.web';
+import { getAll, set, defaults, reset } from '../../data/settings.web';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
 
 export default function SettingsScreen() {
@@ -64,6 +64,15 @@ export default function SettingsScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
       <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Preferences</Text>
+      <View style={{ marginBottom: 8 }}>
+        <Button
+          title="Reset to defaults"
+          onPress={() => {
+            reset();
+            setPrefs(getAll());
+          }}
+        />
+      </View>
 
       <Text>Start of Week</Text>
       <Pressable onPress={() => update('startOfWeek', 'sun')}>
@@ -91,6 +100,7 @@ export default function SettingsScreen() {
         }}
         style={{ borderWidth: 1, borderColor: '#ccc', padding: 6, marginBottom: 8 }}
       />
+      <Text style={{ color: '#666', fontSize: 12 }}>Enter percent between 0 and 100.</Text>
 
       <Text style={{ marginTop: 12 }}>Remember Last Wage</Text>
       <Switch
