@@ -5,12 +5,12 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
+import { getAll as getAllSettings } from '../../data/settings.web';
 import {
   VictoryAxis,
   VictoryBar,
   VictoryBoxPlot,
   VictoryChart,
-  VictoryGroup,
   VictoryLabel,
   VictoryLegend,
   VictoryScatter,
@@ -62,11 +62,30 @@ function confidenceLabel(n: number) {
 }
 function currency(n: number) { return `$${n.toFixed(2)}`; }
 
+type StartOfWeek = 'sun' | 'mon';
+
+function startOfWeek(date: Date, sow: StartOfWeek): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay(); // 0=Sun ... 6=Sat
+  const offset = sow === 'sun' ? day : (day === 0 ? 6 : day - 1);
+  d.setDate(d.getDate() - offset);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function formatDateLabel(d: Date) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}-${dd}`;
+}
+
 export default function InsightsScreen() {
   const [range, setRange] = useState<RangeKey>('30d');
   const [shift, setShift] = useState<ShiftKey>('all');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const sow: StartOfWeek = (getAllSettings().startOfWeek === 'mon' ? 'mon' : 'sun');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -136,6 +155,29 @@ export default function InsightsScreen() {
       tips: +v.tips.toFixed(2),
     }));
   }, [withMetrics]);
+
+  const weeklySeries = useMemo(() => {
+    type Bucket = { hours: number; gross: number; tips: number };
+    const byWeek = new Map<string, Bucket & { start: Date }>();
+    const sorted = [...withMetrics].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    for (const r of sorted) {
+      const weekStart = startOfWeek(new Date(r.date), sow);
+      const key = weekStart.toISOString().slice(0, 10);
+      const prev = byWeek.get(key) || { start: weekStart, hours: 0, gross: 0, tips: 0 };
+      prev.hours += r.hours_worked || 0;
+      prev.gross += r.m.shift_gross;
+      const baseTips = (r.cash_tips || 0) + (r.card_tips || 0);
+      prev.tips += baseTips;
+      byWeek.set(key, prev);
+    }
+    return Array.from(byWeek.values())
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+      .map(b => ({
+        x: formatDateLabel(b.start),
+        eff: b.hours > 0 ? Number((b.gross / b.hours).toFixed(2)) : 0,
+        tips: Number(b.tips.toFixed(2)),
+      }));
+  }, [withMetrics, sow]);
 
   // Heatmap data (weekday x shift_type → avg eff/hr)
   const heatmapData = useMemo(() => {
@@ -250,6 +292,24 @@ export default function InsightsScreen() {
           <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
           <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}` } style={{ tickLabels: { fontSize: 10 } }} />
           <VictoryBar data={dailySeries} x="x" y="eff" />
+        </VictoryChart>
+      </View>
+
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly avg effective $/hr</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}` } style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryBar data={weeklySeries} x="x" y="eff" />
+        </VictoryChart>
+      </View>
+
+      <View style={{ marginTop: 8 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly tips total (cash + card)</Text>
+        <VictoryChart domainPadding={{ x: 16, y: 12 }}>
+          <VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}` } style={{ tickLabels: { fontSize: 10 } }} />
+          <VictoryBar data={weeklySeries} x="x" y="tips" />
         </VictoryChart>
       </View>
 
