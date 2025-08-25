@@ -4,7 +4,12 @@ import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
-import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
+import type { RangeKey, ShiftKey } from '../../components/FilterBar';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const FBraw = require('../../components/FilterBar');
+const FilterBarComp = (FBraw && (FBraw.FilterBar || FBraw.default?.FilterBar || FBraw.default)) as
+  | ((props: { range: RangeKey; setRange: (v: RangeKey) => void; shift: ShiftKey; setShift: (v: ShiftKey) => void }) => JSX.Element)
+  | undefined;
 
 // Lazy-load victory-native to avoid undefined component issues during module init
 type VictoryMod = typeof import('victory-native');
@@ -183,7 +188,13 @@ const V = useVictory();
     >
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
+      {FilterBarComp ? (
+        <FilterBarComp range={range} setRange={setRange} shift={shift} setShift={setShift} />
+      ) : (
+        <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+          <Text>Loading filters…</Text>
+        </View>
+      )}
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Card title="Shifts" value={String(metrics.count)} />
