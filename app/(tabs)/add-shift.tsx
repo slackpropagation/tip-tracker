@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-native';
 import { insertShift } from '../../data/db';
 import { computeTipOut, computeDerived, round2 } from '../../data/calculations';
+import { getAll, get, set } from '../../data/settings.web';
 
 const fieldBox = { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12 };
 const row = { flexDirection: 'row', gap: 12 };
@@ -20,6 +21,21 @@ export default function AddShiftScreen() {
   const [baseWage, setBaseWage] = useState<string>(''); // required per shift (no default)
   const [notes, setNotes] = useState<string>('');
 
+  useEffect(() => {
+    const s = getAll();
+    // Prefill tip-out defaults
+    if (s.defaultTipOutBasis === 'tips' || s.defaultTipOutBasis === 'sales') {
+      setBasis(s.defaultTipOutBasis);
+    }
+    if (typeof s.defaultTipOutPercent === 'number' && s.defaultTipOutPercent >= 0 && s.defaultTipOutPercent <= 100) {
+      setPct(String(s.defaultTipOutPercent));
+    }
+    // Prefill last wage if enabled
+    if (s.rememberLastWage && s.lastWage != null) {
+      setBaseWage(String(s.lastWage));
+    }
+  }, []);
+
   const sanitize = (s: string) => s.replace(/[^\d.,\-]/g, '').replace(',', '.');
 
   // Live math preview
@@ -27,13 +43,13 @@ export default function AddShiftScreen() {
     cash_tips: cash, card_tips: card, tip_out_basis: basis, tip_out_percent: pct, sales, tip_out_override_amount: overrideAmt
   }), [cash, card, basis, pct, sales, overrideAmt]);
 
-const derived = useMemo(() => computeDerived({
-  hours_worked: hours,
-  cash_tips: cash,
-  card_tips: card,
-  base_hourly_wage: baseWage,
-  tip_out: tipOut,
-}), [hours, cash, card, baseWage, tipOut]);
+  const derived = useMemo(() => computeDerived({
+    hours_worked: hours,
+    cash_tips: cash,
+    card_tips: card,
+    base_hourly_wage: baseWage,
+    tip_out: tipOut,
+  }), [hours, cash, card, baseWage, tipOut]);
 
   // Validation
   const hoursNum = Number(hours);
@@ -65,6 +81,14 @@ const derived = useMemo(() => computeDerived({
       notes: notes || null,
     };
     await insertShift(payload);
+    // Persist last wage for next time if enabled
+    const remember = get('rememberLastWage');
+    if (remember) {
+      const wageNum = Number(baseWage);
+      if (!Number.isNaN(wageNum) && wageNum >= 0) {
+        set('lastWage', wageNum);
+      }
+    }
     // reset minimal fields; keep last shift type/basis/pct for convenience
     setHours(''); setCash(''); setCard(''); setSales(''); setOverrideAmt(''); setBaseWage(''); setNotes('');
     // quick feedback
