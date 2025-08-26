@@ -2,6 +2,7 @@ import { View, Text, Button, ScrollView, TextInput, Pressable, Switch } from 're
 import { useState, useEffect } from 'react';
 import { getAll, set, defaults, reset } from '../../data/settings.web';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
+import { computeShiftMetrics } from '../../data/calculations';
 
 export default function SettingsScreen() {
   const [log, setLog] = useState('');
@@ -61,6 +62,78 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const rows = await getShifts();
+      // Build CSV with raw + computed fields
+      const headers = [
+        'id','date','shift_type','hours_worked','cash_tips','card_tips','tip_out_basis','tip_out_percent','sales','tip_out_override_amount','base_hourly_wage','notes',
+        'computed_tip_out','computed_net_tips','computed_wages_earned','computed_effective_hourly','computed_shift_gross'
+      ];
+
+      const esc = (v: any) => {
+        if (v === null || v === undefined) return '';
+        const s = String(v);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      };
+
+      const lines = [headers.join(',')];
+      for (const r of rows) {
+        const m = computeShiftMetrics({
+          hours_worked: r.hours_worked,
+          cash_tips: r.cash_tips,
+          card_tips: r.card_tips,
+          base_hourly_wage: r.base_hourly_wage,
+          tip_out_basis: r.tip_out_basis,
+          tip_out_percent: r.tip_out_percent,
+          sales: r.sales,
+          tip_out_override_amount: r.tip_out_override_amount,
+        });
+        const vals = [
+          r.id,
+          r.date,
+          r.shift_type,
+          r.hours_worked,
+          r.cash_tips,
+          r.card_tips,
+          r.tip_out_basis,
+          r.tip_out_percent,
+          r.sales,
+          r.tip_out_override_amount,
+          r.base_hourly_wage,
+          r.notes,
+          m.tip_out,
+          m.net_tips,
+          m.wages_earned,
+          m.effective_hourly,
+          m.shift_gross,
+        ].map(esc);
+        lines.push(vals.join(','));
+      }
+      const csv = lines.join('\n');
+
+      // Trigger download (web only)
+      if (typeof window !== 'undefined') {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tip-tracker.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        append('[OK] Exported CSV (download started)');
+      } else {
+        append('[Info] CSV export is only available on web.');
+      }
+    } catch (e: any) {
+      append('[ERR] export: ' + (e?.message ?? String(e)));
+      console.error(e);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
       <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Preferences</Text>
@@ -113,6 +186,7 @@ export default function SettingsScreen() {
       <Button title="Seed sample data" onPress={handleSeed} />
       <Button title="List shifts" onPress={handleList} />
       <Button title="Delete ALL shifts" onPress={handleWipe} />
+      <Button title="Export CSV" onPress={handleExport} />
       <Text selectable style={{ marginTop: 12, fontFamily: 'Courier' }}>{log}</Text>
     </ScrollView>
   );
