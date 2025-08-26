@@ -85,7 +85,12 @@ export default function InsightsScreen() {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const sow: StartOfWeek = (getAllSettings().startOfWeek === 'mon' ? 'mon' : 'sun');
+  const [sow, setSow] = useState<StartOfWeek>('sun');
+
+  const readSOW = useCallback(() => {
+    const val = getAllSettings().startOfWeek;
+    setSow(val === 'mon' ? 'mon' : 'sun');
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,8 +102,15 @@ export default function InsightsScreen() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useEffect(() => { readSOW(); load(); }, [readSOW, load]);
+  useFocusEffect(useCallback(() => { readSOW(); load(); }, [readSOW, load]));
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'startOfWeek' || e.key === null) readSOW();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [readSOW]);
 
   const filtered = useMemo(
     () => rows
