@@ -145,18 +145,26 @@ export default function HistoryScreen() {
 
   if (!loading && rows.length === 0) {
     return (
-      <EmptyState
-        icon="📊"
-        title="No shifts yet"
-        subtitle="Start tracking your earnings by adding your first shift from the 'Add Shift' tab below."
-        tipTitle="💡 Pro tip"
-        tipText="Track every shift to see your earning trends and optimize your schedule!"
-      />
+      <View style={{ flex: 1 }}>
+        <View style={{ padding: 16, paddingBottom: 0 }}>
+          <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
+        </View>
+        <EmptyState
+          icon="📊"
+          title="No shifts yet"
+          subtitle="Start tracking your earnings by adding your first shift from the 'Add Shift' tab below."
+          tipTitle="💡 Pro tip"
+          tipText="Track every shift to see your earning trends and optimize your schedule!"
+        />
+      </View>
     );
   }
 
   return (
     <>
+      <View style={{ padding: 16, paddingBottom: 0 }}>
+        <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
+      </View>
       <FlatList
         data={rows}
         keyExtractor={(it) => it.id}
