@@ -34,6 +34,17 @@ export default function HistoryScreen() {
   const undoTimer = (typeof window !== 'undefined') ? (window as any) : ({} as any);
   let undoHandle: any = null;
   
+  // Local toast state for this component
+  const [localToast, setLocalToast] = useState<{
+    visible: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info';
+  }>({
+    visible: false,
+    message: '',
+    type: 'info'
+  });
+  
   console.log('HistoryScreen render - rows count:', rows.length);
 
   const load = useCallback(async () => {
@@ -48,6 +59,17 @@ export default function HistoryScreen() {
     } finally {
       setLoading(false);
     }
+  }, []);
+  
+  // Local toast function that doesn't persist across navigation
+  const showLocalToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    console.log('showLocalToast called with:', { message, type });
+    setLocalToast({ visible: true, message, type });
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setLocalToast(prev => ({ ...prev, visible: false }));
+    }, 3000);
   }, []);
 
   useEffect(() => { 
@@ -78,11 +100,9 @@ export default function HistoryScreen() {
         console.log('Setting undoVisible to true');
         setUndoVisible(true);
         
-        console.log('About to call showToast...');
-        console.log('showToast function exists:', typeof showToast === 'function');
-        console.log('showToast function:', showToast);
-        showToast('Shift deleted successfully! 🗑️', 'success');
-        console.log('showToast called successfully');
+        console.log('About to call showLocalToast...');
+        showLocalToast('Shift deleted successfully! 🗑️', 'success');
+        console.log('showLocalToast called successfully');
         
         console.log('Setting up auto-hide timer');
         // auto-hide after 4s
@@ -98,7 +118,7 @@ export default function HistoryScreen() {
         console.log('Delete process completed successfully');
       } catch (error) {
         console.error('Error in reallyDelete:', error);
-        showToast('Failed to delete shift', 'error');
+        showLocalToast('Failed to delete shift', 'error');
       }
     };
 
@@ -114,7 +134,7 @@ export default function HistoryScreen() {
         destructive: true
       }
     );
-  }, [rows, showConfirm, showToast]);
+  }, [rows, showConfirm, showLocalToast]);
 
   const handleUndo = useCallback(async () => {
     if (!lastDeleted) return;
@@ -135,9 +155,9 @@ export default function HistoryScreen() {
     } as any);
     setUndoVisible(false);
     setLastDeleted(null);
-    showToast('Shift restored successfully! ↩️', 'success');
+            showLocalToast('Shift restored successfully! ↩️', 'success');
     await load();
-  }, [lastDeleted, showToast]);
+  }, [lastDeleted, showLocalToast]);
 
   const renderRightActions = (id: string) => (
     <Pressable
@@ -244,10 +264,9 @@ export default function HistoryScreen() {
         {/* Debug: Test toast directly */}
         <Pressable
           onPress={() => {
-            console.log('Testing toast directly');
-            console.log('showToast function exists:', typeof showToast === 'function');
-            showToast('Test toast message! 🧪', 'success');
-            console.log('Test toast showToast called');
+            console.log('Testing local toast directly');
+            showLocalToast('Test local toast message! 🧪', 'success');
+            console.log('Local toast showLocalToast called');
           }}
           style={{
             backgroundColor: '#4CAF50',
@@ -257,7 +276,7 @@ export default function HistoryScreen() {
             alignSelf: 'flex-start'
           }}
         >
-          <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Toast</Text>
+          <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Local Toast</Text>
         </Pressable>
       </View>
       <FlatList
@@ -271,7 +290,34 @@ export default function HistoryScreen() {
         key={rows.length} // Force re-render when data changes
       />
       
-      <ToastComponent />
+      {/* Local Toast Component */}
+      {localToast.visible && (
+        <View style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          right: 20,
+          backgroundColor: localToast.type === 'success' ? '#129e57' : localToast.type === 'error' ? '#cc3344' : '#2f95dc',
+          padding: 16,
+          borderRadius: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          zIndex: 1000
+        }}>
+          <Text style={{ fontSize: 16 }}>
+            {localToast.type === 'success' ? '✅' : localToast.type === 'error' ? '❌' : 'ℹ️'}
+          </Text>
+          <Text style={{
+            color: 'white',
+            flex: 1,
+            fontSize: 14,
+            lineHeight: 20
+          }}>
+            {localToast.message}
+          </Text>
+        </View>
+      )}
 
       {/* Undo toast */}
       <Modal transparent visible={undoVisible} animationType="fade" onRequestClose={() => setUndoVisible(false)}>
