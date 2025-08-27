@@ -267,14 +267,6 @@ export default function InsightsScreen() {
     >
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      {FilterBarComp ? (
-        <FilterBarComp range={range} setRange={setRange} shift={shift} setShift={setShift} />
-      ) : (
-        <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
-          <Text>Loading filters…</Text>
-        </View>
-      )}
-
       {/* Empty state for no data */}
       {!loading && filtered.length === 0 && (
         <EmptyState
@@ -292,9 +284,18 @@ export default function InsightsScreen() {
         />
       )}
 
-      {/* Show metrics and charts only when there's data */}
+      {/* Show filters and metrics/charts only when there's data */}
       {filtered.length > 0 && (
         <>
+          {FilterBarComp ? (
+            <FilterBarComp range={range} setRange={setRange} shift={shift} setShift={setShift} />
+          ) : (
+            <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+              <Text>Loading filters…</Text>
+            </View>
+          )}
+
+          {/* Show metrics and charts only when there's data */}
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Card title="Shifts" value={String(metrics.count)} />
             <Card title="Hours" value={String(metrics.hours)} />

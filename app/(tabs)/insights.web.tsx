@@ -275,8 +275,6 @@ export default function InsightsScreen() {
     <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}>
       <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
-
       {/* Empty state for no data */}
       {!loading && filtered.length === 0 && (
         <EmptyState
@@ -294,9 +292,11 @@ export default function InsightsScreen() {
         />
       )}
 
-      {/* Show metrics and charts only when there's data */}
+      {/* Show filters and metrics/charts only when there's data */}
       {filtered.length > 0 && (
         <>
+          <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
+
           {/* KPI rows */}
       <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
         <Card title="Shifts" value={String(summary.count)} />
