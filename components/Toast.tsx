@@ -152,7 +152,17 @@ export function useToast() {
   }, []);
 
   const hideToast = useCallback(() => {
+    console.log('hideToast called');
     setToast(prev => ({ ...prev, visible: false }));
+  }, []);
+  
+  const resetToast = useCallback(() => {
+    console.log('resetToast called - clearing all toast state');
+    setToast({
+      visible: false,
+      message: '',
+      type: 'info'
+    });
   }, []);
 
   const ToastComponent = useCallback(() => (
@@ -168,6 +178,7 @@ export function useToast() {
   return {
     showToast,
     hideToast,
+    resetToast,
     ToastComponent
   };
 }

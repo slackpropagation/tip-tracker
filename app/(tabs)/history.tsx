@@ -26,7 +26,7 @@ type Row = {
 export default function HistoryScreen() {
   const router = useRouter();
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
-  const { showToast, ToastComponent } = useToast();
+  const { showToast, ToastComponent, resetToast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
@@ -50,11 +50,22 @@ export default function HistoryScreen() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { 
+    load(); 
+    
+    // Cleanup function to reset toast when component unmounts
+    return () => {
+      console.log('History screen unmounting - cleaning up toast state');
+      resetToast();
+    };
+  }, [load]);
 
   useFocusEffect(
     useCallback(() => {
       load();
+      // Reset any lingering toast state when returning to this screen
+      console.log('History screen focused - resetting toast state');
+      resetToast();
     }, [load])
   );
 
