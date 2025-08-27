@@ -7,6 +7,7 @@ import { computeShiftMetrics } from '../../data/calculations';
 import { useRouter } from 'expo-router';
 import { EmptyState } from '../../components/EmptyState';
 import { useConfirmDialog } from '../../components/ConfirmDialog';
+import { useToast } from '../../components/Toast';
 
 type Row = {
   id: string;
@@ -26,6 +27,7 @@ type Row = {
 export default function HistoryScreen() {
   const router = useRouter();
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
+  const { showToast, ToastComponent } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
@@ -59,6 +61,7 @@ export default function HistoryScreen() {
       await deleteShift(id);
       setLastDeleted(row);
       setUndoVisible(true);
+      showToast('Shift deleted successfully! 🗑️', 'success');
       await load();
       // auto-hide after 4s
       try { if (undoHandle) clearTimeout(undoHandle); } catch {}
@@ -96,8 +99,9 @@ export default function HistoryScreen() {
     } as any);
     setUndoVisible(false);
     setLastDeleted(null);
+    showToast('Shift restored successfully! ↩️', 'success');
     await load();
-  }, [lastDeleted, load]);
+  }, [lastDeleted, load, showToast]);
 
   const renderRightActions = (id: string) => (
     <Pressable
@@ -189,6 +193,7 @@ export default function HistoryScreen() {
         </View>
       </Modal>
       <ConfirmDialogComponent />
+      <ToastComponent />
     </>
   );
 }
