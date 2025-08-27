@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-native';
-import { insertShift } from '../../data/db';
-import { computeTipOut, computeDerived, round2 } from '../../data/calculations';
-import { getAll, get, set } from '../../data/settings.web';
+import { useEffect, useMemo, useState } from 'react';
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useToast } from '../../components/Toast';
+import { computeDerived, computeTipOut } from '../../data/calculations';
+import { insertShift } from '../../data/db';
+import { get, getAll, set } from '../../data/settings.web';
 
 const fieldBox = { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12 };
 const row = { flexDirection: 'row', gap: 12 };
@@ -227,13 +227,6 @@ export default function AddShiftScreen() {
       <View style={fieldBox}>
         <Text style={{ fontWeight: '600', marginBottom: 4 }}>Notes (optional)</Text>
         <TextInput value={notes} onChangeText={setNotes} placeholder="#patio #tourists" />
-      </View>
-
-      {/* Debug (temp) */}
-      <View style={{ ...fieldBox, backgroundColor: '#fff8e1' }}>
-        <Text style={{ fontWeight: '600', marginBottom: 4 }}>Debug (temp)</Text>
-        <Text>hours raw: “{hours}” → parsed: {Number(hours.replace(',', '.')) || 0}</Text>
-        <Text>base wage raw: “{baseWage}” → parsed: {Number(baseWage.replace(',', '.')) || 0}</Text>
       </View>
 
       {/* Live preview */}
