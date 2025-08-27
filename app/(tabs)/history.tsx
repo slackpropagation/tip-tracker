@@ -4,7 +4,6 @@ import { FlatList, Modal, Pressable, RefreshControl, Text, View } from 'react-na
 import { Swipeable } from 'react-native-gesture-handler';
 import { useConfirmDialog } from '../../components/ConfirmDialog';
 import { EmptyState } from '../../components/EmptyState';
-import { useToast } from '../../components/Toast';
 import { computeShiftMetrics } from '../../data/calculations';
 import { deleteShift, getShifts, insertShift } from '../../data/db';
 
@@ -26,7 +25,6 @@ type Row = {
 export default function HistoryScreen() {
   const router = useRouter();
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
-  const { showToast, ToastComponent } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
@@ -242,42 +240,7 @@ export default function HistoryScreen() {
       <View style={{ padding: 16, paddingBottom: 0 }}>
         <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
         
-        {/* Debug: Direct delete test */}
-        {rows.length > 0 && (
-          <Pressable
-            onPress={() => {
-              console.log('Direct delete test - calling confirmAndDelete directly');
-              confirmAndDelete(rows[0].id);
-            }}
-            style={{
-              backgroundColor: '#ff6b6b',
-              padding: 8,
-              borderRadius: 6,
-              marginTop: 8,
-              alignSelf: 'flex-start'
-            }}
-          >
-            <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Direct Delete Test</Text>
-          </Pressable>
-        )}
-        
-        {/* Debug: Test toast directly */}
-        <Pressable
-          onPress={() => {
-            console.log('Testing local toast directly');
-            showLocalToast('Test local toast message! 🧪', 'success');
-            console.log('Local toast showLocalToast called');
-          }}
-          style={{
-            backgroundColor: '#4CAF50',
-            padding: 8,
-            borderRadius: 6,
-            marginTop: 8,
-            alignSelf: 'flex-start'
-          }}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Local Toast</Text>
-        </Pressable>
+
       </View>
       <FlatList
         data={rows}
@@ -331,11 +294,7 @@ export default function HistoryScreen() {
         </View>
       </Modal>
       <ConfirmDialogComponent />
-      {/* Debug: Check if ToastComponent is rendered */}
-      <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'red', padding: 5 }}>
-        <Text style={{ color: 'white', fontSize: 10 }}>Toast Debug: {ToastComponent ? 'Present' : 'Missing'}</Text>
-        <Text style={{ color: 'white', fontSize: 10 }}>showToast: {typeof showToast === 'function' ? 'Function' : 'Missing'}</Text>
-      </View>
+
     </>
   );
 }
