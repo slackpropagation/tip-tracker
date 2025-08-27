@@ -11,6 +11,8 @@ export default function SettingsScreen() {
   const [importInfo, setImportInfo] = useState<{ rows: number; skipped: number; errors: string[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [confirmWipeVisible, setConfirmWipeVisible] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null);
+  const toastTimer = useRef<any>(null);
 
   useEffect(() => {
     setPrefs(getAll());
@@ -21,8 +23,16 @@ export default function SettingsScreen() {
     set(key as any, value);
   };
 
-  const append = (msg: string) =>
+  const append = (msg: string) => {
     setLog(prev => (prev ? prev + '\n' + msg : msg));
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    const lower = msg.toLowerCase();
+    const type = lower.startsWith('[ok]') ? 'ok' : lower.startsWith('[err]') ? 'err' : null;
+    if (type) {
+      setToast({ msg, type });
+      toastTimer.current = setTimeout(() => setToast(null), 2500);
+    }
+  };
 
   const handleInit = async () => {
     try {
@@ -224,6 +234,20 @@ export default function SettingsScreen() {
               <Button title="Cancel" onPress={() => setConfirmWipeVisible(false)} />
               <Button title="Delete" color="#b00" onPress={performWipe} />
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Toast (success/error) */}
+      <Modal transparent visible={!!toast} animationType="fade" onRequestClose={() => setToast(null)}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center', padding: 20 }}>
+          <View style={{ width: '100%', maxWidth: 520, borderRadius: 10, padding: 12, backgroundColor: toast?.type === 'ok' ? '#129e57' : '#cc3344' }}>
+            <Text style={{ color: 'white', fontWeight: '700', marginBottom: 4 }}>
+              {toast?.type === 'ok' ? 'Success' : 'Error'}
+            </Text>
+            <Text style={{ color: 'white' }}>
+              {(toast?.msg || '').replace(/^\[(OK|ERR)\]\s*/i, '')}
+            </Text>
           </View>
         </View>
       </Modal>
