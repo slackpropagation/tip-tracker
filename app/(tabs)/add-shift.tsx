@@ -201,7 +201,10 @@ export default function AddShiftScreen() {
           </View>
         )}
         <View style={{ marginTop: 8 }}>
-          <Text>Override amount (optional)</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Text>Override amount (optional)</Text>
+            <Text style={{ fontSize: 16, color: '#666' }}>ℹ️</Text>
+          </View>
           <TextInput
             value={overrideAmt}
             onChangeText={(v) => setOverrideAmt(sanitize(v))}
@@ -209,6 +212,9 @@ export default function AddShiftScreen() {
             keyboardType="decimal-pad"
             inputMode="decimal"
           />
+          <Text style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
+            Manually set tip-out amount instead of using percentage calculation
+          </Text>
         </View>
         <Text style={{ marginTop: 8 }}>Calculated tip-out: ${tipOut.toFixed(2)}</Text>
       </View>
