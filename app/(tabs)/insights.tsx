@@ -260,6 +260,132 @@ export default function InsightsScreen() {
     return rows;
   }, [filtered, sow]);
 
+  // Day × Shift heatmap data
+  const heatmapData = useMemo(() => {
+    const dowNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const shiftTypes = ['Brunch', 'Lunch', 'Dinner'];
+    
+    // Initialize heatmap matrix
+    const matrix: Record<string, Record<string, { 
+      avgEffHourly: number; 
+      totalShifts: number; 
+      totalHours: number;
+      confidence: 'Low' | 'Medium' | 'High';
+    }>> = {};
+    
+    // Initialize all combinations
+    dowNames.forEach(dow => {
+      matrix[dow] = {};
+      shiftTypes.forEach(shift => {
+        matrix[dow][shift] = { avgEffHourly: 0, totalShifts: 0, totalHours: 0, confidence: 'Low' };
+      });
+    });
+    
+    // Group shifts by day of week and shift type
+    const grouped: Record<string, Record<string, number[]>> = {};
+    
+    for (const r of filtered) {
+      const m = computeShiftMetrics({
+        hours_worked: r.hours_worked,
+        cash_tips: r.cash_tips,
+        card_tips: r.card_tips,
+        base_hourly_wage: r.base_hourly_wage,
+        tip_out_basis: r.tip_out_basis,
+        tip_out_percent: r.tip_out_percent,
+        sales: r.sales,
+        tip_out_override_amount: r.tip_out_override_amount,
+      });
+      
+      const d = new Date(r.date);
+      const dow = dowNames[d.getDay()];
+      const shiftType = r.shift_type || 'Unknown';
+      
+      if (!grouped[dow]) grouped[dow] = {};
+      if (!grouped[dow][shiftType]) grouped[dow][shiftType] = [];
+      grouped[dow][shiftType].push(m.effective_hourly);
+    }
+    
+    // Calculate averages and confidence levels
+    Object.entries(grouped).forEach(([dow, shifts]) => {
+      Object.entries(shifts).forEach(([shiftType, hourlyRates]) => {
+        if (hourlyRates.length > 0) {
+          const totalShifts = hourlyRates.length;
+          const totalHours = hourlyRates.reduce((sum, rate) => sum + rate, 0);
+          const avgEffHourly = totalHours / totalShifts;
+          
+          // Determine confidence level based on sample size
+          let confidence: 'Low' | 'Medium' | 'High' = 'Low';
+          if (totalShifts >= 8) confidence = 'High';
+          else if (totalShifts >= 3) confidence = 'Medium';
+          
+          matrix[dow][shiftType] = {
+            avgEffHourly: Number(avgEffHourly.toFixed(2)),
+            totalShifts,
+            totalHours: Number(totalHours.toFixed(2)),
+            confidence
+          };
+        }
+      });
+    });
+    
+    return matrix;
+  }, [filtered]);
+
+  // Recommendation data with confidence
+  const recommendations = useMemo(() => {
+    const recs: Array<{
+      type: 'bestTime' | 'bestShift' | 'avoidTime' | 'avoidShift';
+      title: string;
+      description: string;
+      confidence: 'Low' | 'Medium' | 'High';
+      value: string;
+    }> = [];
+    
+    // Find best day of week
+    if (metrics.bestDow) {
+      recs.push({
+        type: 'bestTime',
+        title: 'Best Day to Work',
+        description: `${metrics.bestDow.dow} shifts earn the most`,
+        confidence: metrics.count >= 8 ? 'High' : metrics.count >= 3 ? 'Medium' : 'Low',
+        value: `${metrics.bestDow.dow} ($${metrics.bestDow.eff.toFixed(2)}/hr)`
+      });
+    }
+    
+    // Find best shift type
+    if (metrics.bestShiftType) {
+      recs.push({
+        type: 'bestShift',
+        title: 'Most Profitable Shift',
+        description: `${metrics.bestShiftType.type} shifts are your best bet`,
+        confidence: metrics.count >= 8 ? 'High' : metrics.count >= 3 ? 'Medium' : 'Low',
+        value: `${metrics.bestShiftType.type} ($${metrics.bestShiftType.eff.toFixed(2)}/hr)`
+      });
+    }
+    
+    // Find worst performing combinations from heatmap
+    let worstCombination = { dow: '', shift: '', rate: Infinity };
+    Object.entries(heatmapData).forEach(([dow, shifts]) => {
+      Object.entries(shifts).forEach(([shift, data]) => {
+        if (data.totalShifts > 0 && data.avgEffHourly < worstCombination.rate) {
+          worstCombination = { dow, shift, rate: data.avgEffHourly };
+        }
+      });
+    });
+    
+    if (worstCombination.dow && worstCombination.shift && worstCombination.rate < Infinity) {
+      recs.push({
+        type: 'avoidTime',
+        title: 'Consider Avoiding',
+        description: `${worstCombination.dow} ${worstCombination.shift} shifts`,
+        confidence: 'Medium',
+        value: `$${worstCombination.rate.toFixed(2)}/hr`
+      });
+    }
+    
+    return recs;
+  }, [metrics, heatmapData]);
+
   return (
     <>
       {!loading && filtered.length === 0 ? (
@@ -374,6 +500,117 @@ export default function InsightsScreen() {
                 </V.VictoryChart>
               </View>
               </>
+              )}
+
+              {/* Day × Shift Heatmap */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 12 }}>Day × Shift Heatmap</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Average effective hourly rate by day and shift type
+                </Text>
+                
+                {/* Heatmap Grid */}
+                <View style={{ borderWidth: 1, borderColor: '#eee', borderRadius: 8, overflow: 'hidden' }}>
+                  {/* Header Row */}
+                  <View style={{ flexDirection: 'row', backgroundColor: '#f8f9fa' }}>
+                    <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>Day</Text>
+                    </View>
+                    {['Brunch', 'Lunch', 'Dinner'].map(shift => (
+                      <View key={shift} style={{ flex: 1, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
+                        <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{shift}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  
+                  {/* Data Rows */}
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(dow => (
+                    <View key={dow} style={{ flexDirection: 'row' }}>
+                      <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee', backgroundColor: '#f8f9fa' }}>
+                        <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{dow}</Text>
+                      </View>
+                      {['Brunch', 'Lunch', 'Dinner'].map(shift => {
+                        const data = heatmapData[dow]?.[shift];
+                        const hasData = data && data.totalShifts > 0;
+                        const bgColor = hasData ? 
+                          (data.avgEffHourly > 25 ? '#d4edda' : 
+                           data.avgEffHourly > 20 ? '#fff3cd' : 
+                           data.avgEffHourly > 15 ? '#f8d7da' : '#f8f9fa') : '#f8f9fa';
+                        
+                        return (
+                          <View key={shift} style={{ 
+                            flex: 1, 
+                            padding: 8, 
+                            borderRightWidth: 1, 
+                            borderBottomWidth: 1, 
+                            borderColor: '#eee',
+                            backgroundColor: bgColor,
+                            alignItems: 'center'
+                          }}>
+                            {hasData ? (
+                              <>
+                                <Text style={{ fontSize: 14, fontWeight: '600' }}>${data.avgEffHourly}</Text>
+                                <Text style={{ fontSize: 10, color: '#666' }}>{data.totalShifts} shifts</Text>
+                                <View style={{ 
+                                  paddingHorizontal: 4, 
+                                  paddingVertical: 1, 
+                                  borderRadius: 4, 
+                                  backgroundColor: data.confidence === 'High' ? '#28a745' : 
+                                                data.confidence === 'Medium' ? '#ffc107' : '#dc3545'
+                                }}>
+                                  <Text style={{ fontSize: 8, color: 'white', fontWeight: '600' }}>
+                                    {data.confidence}
+                                  </Text>
+                                </View>
+                              </>
+                            ) : (
+                              <Text style={{ fontSize: 10, color: '#ccc' }}>—</Text>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Recommendations */}
+              {recommendations.length > 0 && (
+                <View style={{ marginTop: 16 }}>
+                  <Text style={{ fontWeight: '700', marginBottom: 12 }}>Smart Recommendations</Text>
+                  <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                    Actionable insights to optimize your earnings
+                  </Text>
+                  
+                  <View style={{ gap: 8 }}>
+                    {recommendations.map((rec, index) => (
+                      <View key={index} style={{
+                        padding: 12,
+                        borderWidth: 1,
+                        borderColor: '#e9ecef',
+                        borderRadius: 8,
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                          <Text style={{ fontWeight: '600', fontSize: 14 }}>{rec.title}</Text>
+                          <View style={{
+                            paddingHorizontal: 6,
+                            paddingVertical: 2,
+                            borderRadius: 4,
+                            backgroundColor: rec.confidence === 'High' ? '#28a745' : 
+                                              rec.confidence === 'Medium' ? '#ffc107' : '#dc3545'
+                          }}>
+                            <Text style={{ fontSize: 10, color: 'white', fontWeight: '600' }}>
+                              {rec.confidence}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>{rec.description}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#2f95dc' }}>{rec.value}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
               )}
             </>
           )}

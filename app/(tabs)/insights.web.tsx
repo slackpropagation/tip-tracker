@@ -405,12 +405,107 @@ export default function InsightsScreen() {
             labels={(d: any) => `${d.datum.n} samples`}
             style={{ labels: { fontSize: 9 } }}
           />
-                 </VictoryChart>
-       </View>
-         </>
-       )}
-     </ScrollView>
-   )}
-   </>
- );
+        </VictoryChart>
+      </View>
+
+      {/* Enhanced Day × Shift Heatmap */}
+      <View style={{ marginTop: 16 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 12 }}>Day × Shift Heatmap</Text>
+        <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+          Average effective hourly rate by day and shift type
+        </Text>
+        
+        {/* Heatmap Grid */}
+        <View style={{ borderWidth: 1, borderColor: '#eee', borderRadius: 8, overflow: 'hidden' }}>
+          {/* Header Row */}
+          <View style={{ flexDirection: 'row', backgroundColor: '#f8f9fa' }}>
+            <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
+              <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>Day</Text>
+            </View>
+            {['Brunch', 'Lunch', 'Dinner'].map(shift => (
+              <View key={shift} style={{ flex: 1, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{shift}</Text>
+              </View>
+            ))}
+          </View>
+          
+          {/* Data Rows */}
+          {WEEKS.map(dow => (
+            <View key={dow} style={{ flexDirection: 'row' }}>
+              <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee', backgroundColor: '#f8f9fa' }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{dow}</Text>
+              </View>
+              {['Brunch', 'Lunch', 'Dinner'].map(shift => {
+                const data = heatmapData.cells.find(c => c.x === dow && c.y === shift);
+                const hasData = data && data.n > 0;
+                const bgColor = hasData ? 
+                  (data.value > 25 ? '#d4edda' : 
+                   data.value > 20 ? '#fff3cd' : 
+                   data.value > 15 ? '#f8d7da' : '#f8f9fa') : '#f8f9fa';
+                
+                return (
+                  <View key={shift} style={{ 
+                    flex: 1, 
+                    padding: 8, 
+                    borderRightWidth: 1, 
+                    borderBottomWidth: 1, 
+                    borderColor: '#eee',
+                    backgroundColor: bgColor,
+                    alignItems: 'center'
+                  }}>
+                    {hasData ? (
+                      <>
+                        <Text style={{ fontSize: 14, fontWeight: '600' }}>${data.value}</Text>
+                        <Text style={{ fontSize: 10, color: '#666' }}>{data.n} shifts</Text>
+                        <View style={{ 
+                          paddingHorizontal: 4, 
+                          paddingVertical: 1, 
+                          borderRadius: 4, 
+                          backgroundColor: confidenceLabel(data.n) === 'High' ? '#28a745' : 
+                                            confidenceLabel(data.n) === 'Medium' ? '#ffc107' : '#dc3545'
+                        }}>
+                          <Text style={{ fontSize: 8, color: 'white', fontWeight: '600' }}>
+                            {confidenceLabel(data.n)}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={{ fontSize: 10, color: '#ccc' }}>—</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Enhanced Recommendations */}
+      <View style={{ marginTop: 16 }}>
+        <Text style={{ fontWeight: '700', marginBottom: 12 }}>Smart Recommendations</Text>
+        <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+          Actionable insights to optimize your earnings
+        </Text>
+        
+        <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
+          <Card 
+            title="Best Day to Work" 
+            value={bests.bestHourly.label} 
+            subtitle={`$${bests.bestHourly.value.toFixed(2)}/hr average`}
+            badge={bests.bestHourly.conf}
+          />
+          <Card 
+            title="Most Profitable Shift" 
+            value={bests.bestTotal.label} 
+            subtitle={`$${bests.bestTotal.value.toFixed(2)}/hr average`}
+            badge={bests.bestTotal.conf}
+          />
+        </View>
+      </View>
+        </>
+      )}
+    </ScrollView>
+  )}
+  </>
+);
 }
