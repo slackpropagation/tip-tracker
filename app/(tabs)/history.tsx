@@ -77,7 +77,10 @@ export default function HistoryScreen() {
         setUndoVisible(true);
         
         console.log('Showing success toast immediately');
+        console.log('showToast function:', showToast);
+        console.log('ToastComponent:', ToastComponent);
         showToast('Shift deleted successfully! 🗑️', 'success');
+        console.log('showToast called - checking if toast appears');
         
         console.log('Setting up auto-hide timer');
         // auto-hide after 4s
@@ -263,6 +266,10 @@ export default function HistoryScreen() {
       </Modal>
       <ConfirmDialogComponent />
       <ToastComponent />
+      {/* Debug: Check if ToastComponent is rendered */}
+      <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'red', padding: 5 }}>
+        <Text style={{ color: 'white', fontSize: 10 }}>Toast Debug: {ToastComponent ? 'Present' : 'Missing'}</Text>
+      </View>
     </>
   );
 }

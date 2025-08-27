@@ -21,6 +21,7 @@ export function Toast({
   onClose,
   showCloseButton = false
 }: ToastProps) {
+  console.log('Toast component render:', { visible, message, type, duration });
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -155,6 +156,7 @@ export function useToast() {
       visible={toast.visible}
       message={toast.message}
       type={toast.type}
+      duration={3000}
       onClose={hideToast}
     />
   ), [toast.visible, toast.message, toast.type, hideToast]);
