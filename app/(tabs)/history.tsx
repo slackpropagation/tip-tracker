@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, Pressable, Platform, Modal } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { FlatList, Modal, Pressable, RefreshControl, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { useFocusEffect } from 'expo-router';
-import { getShifts, deleteShift, insertShift } from '../../data/db';
-import { computeShiftMetrics } from '../../data/calculations';
-import { useRouter } from 'expo-router';
-import { EmptyState } from '../../components/EmptyState';
 import { useConfirmDialog } from '../../components/ConfirmDialog';
+import { EmptyState } from '../../components/EmptyState';
 import { useToast } from '../../components/Toast';
+import { computeShiftMetrics } from '../../data/calculations';
+import { deleteShift, getShifts, insertShift } from '../../data/db';
 
 type Row = {
   id: string;
@@ -36,11 +35,14 @@ export default function HistoryScreen() {
   let undoHandle: any = null;
 
   const load = useCallback(async () => {
+    console.log('load function called');
     setLoading(true);
     try {
       const data = await getShifts();
+      console.log('getShifts returned:', data.length, 'shifts');
       data.sort((a: Row, b: Row) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
       setRows(data);
+      console.log('setRows called with:', data.length, 'shifts');
     } finally {
       setLoading(false);
     }
@@ -105,7 +107,7 @@ export default function HistoryScreen() {
         destructive: true
       }
     );
-  }, [rows, load, showConfirm, showToast]);
+  }, [rows, showConfirm, showToast]);
 
   const handleUndo = useCallback(async () => {
     if (!lastDeleted) return;
@@ -128,7 +130,7 @@ export default function HistoryScreen() {
     setLastDeleted(null);
     showToast('Shift restored successfully! ↩️', 'success');
     await load();
-  }, [lastDeleted, load, showToast]);
+  }, [lastDeleted, showToast]);
 
   const renderRightActions = (id: string) => (
     <Pressable
