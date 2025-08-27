@@ -33,6 +33,8 @@ export default function HistoryScreen() {
   const [lastDeleted, setLastDeleted] = useState<Row | null>(null);
   const undoTimer = (typeof window !== 'undefined') ? (window as any) : ({} as any);
   let undoHandle: any = null;
+  
+  console.log('HistoryScreen render - rows count:', rows.length);
 
   const load = useCallback(async () => {
     console.log('load function called');
@@ -149,7 +151,7 @@ export default function HistoryScreen() {
     </Pressable>
   );
 
-  const renderItem = ({ item }: { item: Row }) => {
+  const renderItem = useCallback(({ item }: { item: Row }) => {
     console.log('Rendering shift item:', item.id, item.date);
     
     const m = computeShiftMetrics({
@@ -191,7 +193,7 @@ export default function HistoryScreen() {
         </Pressable>
       </Swipeable>
     );
-  };
+  }, []);
 
   if (!loading && rows.length === 0) {
     return (
@@ -245,6 +247,7 @@ export default function HistoryScreen() {
           <RefreshControl refreshing={loading} onRefresh={load} />
         }
         contentContainerStyle={{ paddingBottom: 40 }}
+        key={rows.length} // Force re-render when data changes
       />
 
       {/* Undo toast */}
