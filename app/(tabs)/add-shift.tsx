@@ -3,11 +3,14 @@ import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-na
 import { insertShift } from '../../data/db';
 import { computeTipOut, computeDerived, round2 } from '../../data/calculations';
 import { getAll, get, set } from '../../data/settings.web';
+import { useToast } from '../../components/Toast';
 
 const fieldBox = { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12 };
 const row = { flexDirection: 'row', gap: 12 };
 
 export default function AddShiftScreen() {
+  const { showToast, ToastComponent } = useToast();
+  
   // Required
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10)); // YYYY-MM-DD
   const [shiftType, setShiftType] = useState<'Brunch'|'Lunch'|'Dinner'>('Dinner');
@@ -91,12 +94,14 @@ export default function AddShiftScreen() {
     }
     // reset minimal fields; keep last shift type/basis/pct for convenience
     setHours(''); setCash(''); setCard(''); setSales(''); setOverrideAmt(''); setBaseWage(''); setNotes('');
-    // quick feedback
-    alert('Shift saved ✅');
+    // Show success toast
+    showToast('Shift saved successfully! ✅', 'success');
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+    <>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        <ToastComponent />
       <Text style={{ fontSize: 20, fontWeight: '600' }}>Add Shift</Text>
 
       {/* Date */}
@@ -262,6 +267,7 @@ export default function AddShiftScreen() {
       <Text style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
         {Platform.OS === 'web' ? 'Using web storage (AsyncStorage polyfill)' : 'Using SQLite on device'}
       </Text>
+      <ToastComponent />
     </ScrollView>
   );
 }

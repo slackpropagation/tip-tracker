@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, Pressable, Platform, Alert, Modal } from 'react-native';
+import { View, Text, FlatList, RefreshControl, Pressable, Platform, Modal } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useFocusEffect, Link } from 'expo-router';
 import { getShifts, deleteShift, insertShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { useRouter } from 'expo-router';
 import { EmptyState } from '../../components/EmptyState';
+import { useConfirmDialog } from '../../components/ConfirmDialog';
 
 type Row = {
   id: string;
@@ -24,6 +25,7 @@ type Row = {
 
 export default function HistoryScreen() {
   const router = useRouter();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
@@ -63,17 +65,17 @@ export default function HistoryScreen() {
       undoHandle = undoTimer.setTimeout(() => setUndoVisible(false), 4000);
     };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm('Delete this shift?')) {
-        reallyDelete();
+    showConfirm(
+      'Delete Shift',
+      'Are you sure you want to delete this shift?',
+      reallyDelete,
+      {
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        destructive: true
       }
-    } else {
-      Alert.alert('Delete shift', 'Are you sure you want to delete this shift?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: reallyDelete },
-      ]);
-    }
-  }, [rows, load]);
+    );
+  }, [rows, load, showConfirm]);
 
   const handleUndo = useCallback(async () => {
     if (!lastDeleted) return;
@@ -186,6 +188,7 @@ export default function HistoryScreen() {
           </View>
         </View>
       </Modal>
+      <ConfirmDialogComponent />
     </>
   );
 }

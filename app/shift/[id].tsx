@@ -4,23 +4,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, Pressable, ScrollView, TextInput, Platform } from 'react-native';
 import { getShiftById, updateShift, deleteShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
+import { useConfirmDialog } from '../../components/ConfirmDialog';
 
 const fieldBox = { borderWidth: 1, borderColor: '#eee', borderRadius: 8, padding: 12, marginTop: 8 };
 const row = { flexDirection: 'row', gap: 12 };
 
-function confirmDelete(msg: string) {
-  if (Platform.OS === 'web') {
-    return window.confirm(msg);
-  } else {
-    // Minimal inline confirm for native; could use Alert.alert if you prefer
-    return window.confirm ? window.confirm(msg) : true;
-  }
-}
+// Remove the old confirmDelete function - we'll use the new ConfirmDialog component
 
 const sanitize = (s: string) => (s ?? '').toString().replace(/[^\d.,\-]/g, '').replace(',', '.');
 
 export default function ShiftDetail() {
   const params = useLocalSearchParams();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
   const idParam = (Array.isArray(params.id) ? params.id[0] : params.id) as string;
   const [rowData, setRowData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -124,10 +119,19 @@ const onSave = async () => {
 };
 
   const onDelete = async () => {
-    const ok = confirmDelete('Delete this shift permanently?');
-    if (!ok) return;
-    await deleteShift(String(idParam));
-    router.back();
+    showConfirm(
+      'Delete Shift',
+      'Are you sure you want to delete this shift permanently?',
+      async () => {
+        await deleteShift(String(idParam));
+        router.back();
+      },
+      {
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        destructive: true
+      }
+    );
   };
 
   return (
@@ -261,6 +265,7 @@ const onSave = async () => {
           <Text style={{ color:'#b00020', fontWeight:'700' }}>Delete Shift</Text>
         </Pressable>
       )}
+      <ConfirmDialogComponent />
     </ScrollView>
   );
 }
