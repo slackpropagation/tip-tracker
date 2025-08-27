@@ -72,11 +72,8 @@ export default function HistoryScreen() {
         console.log('Setting undoVisible to true');
         setUndoVisible(true);
         
-        console.log('Showing success toast');
+        console.log('Showing success toast immediately');
         showToast('Shift deleted successfully! 🗑️', 'success');
-        
-        console.log('Reloading data');
-        await load();
         
         console.log('Setting up auto-hide timer');
         // auto-hide after 4s
@@ -85,6 +82,9 @@ export default function HistoryScreen() {
           console.log('Auto-hiding undo modal');
           setUndoVisible(false);
         }, 4000);
+        
+        console.log('Reloading data after toast');
+        await load();
         
         console.log('Delete process completed successfully');
       } catch (error) {
@@ -212,24 +212,7 @@ export default function HistoryScreen() {
       <View style={{ padding: 16, paddingBottom: 0 }}>
         <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
         
-        {/* Temporary test button */}
-        {rows.length > 0 && (
-          <Pressable
-            onPress={() => {
-              console.log('Test delete button pressed');
-              confirmAndDelete(rows[0].id);
-            }}
-            style={{
-              backgroundColor: '#ff6b6b',
-              padding: 8,
-              borderRadius: 6,
-              marginTop: 8,
-              alignSelf: 'flex-start'
-            }}
-          >
-            <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Delete First Shift</Text>
-          </Pressable>
-        )}
+
       </View>
       <FlatList
         data={rows}
