@@ -58,14 +58,21 @@ export default function HistoryScreen() {
     const row = rows.find(r => r.id === id) || null;
 
     const reallyDelete = async () => {
-      await deleteShift(id);
-      setLastDeleted(row);
-      setUndoVisible(true);
-      showToast('Shift deleted successfully! 🗑️', 'success');
-      await load();
-      // auto-hide after 4s
-      try { if (undoHandle) clearTimeout(undoHandle); } catch {}
-      undoHandle = undoTimer.setTimeout(() => setUndoVisible(false), 4000);
+      console.log('Deleting shift with ID:', id);
+      try {
+        await deleteShift(id);
+        console.log('Shift deleted successfully');
+        setLastDeleted(row);
+        setUndoVisible(true);
+        showToast('Shift deleted successfully! 🗑️', 'success');
+        await load();
+        // auto-hide after 4s
+        try { if (undoHandle) clearTimeout(undoHandle); } catch {}
+        undoHandle = undoTimer.setTimeout(() => setUndoVisible(false), 4000);
+      } catch (error) {
+        console.error('Error deleting shift:', error);
+        showToast('Failed to delete shift', 'error');
+      }
     };
 
     showConfirm(
@@ -130,21 +137,23 @@ export default function HistoryScreen() {
     });
     return (
       <Swipeable renderRightActions={() => renderRightActions(item.id)} overshootRight={false} friction={2}>
-        <Link href={`/shift/${item.id}`} asChild>
-          <Pressable
-            onLongPress={() => confirmAndDelete(item.id)}
-            delayLongPress={400}
-            style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
-          >
-            <Text style={{ fontWeight: '600' }}>
-              {item.date} • {item.shift_type}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
-              <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
-              <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
-            </View>
-          </Pressable>
-        </Link>
+        <Pressable
+          onLongPress={() => confirmAndDelete(item.id)}
+          delayLongPress={400}
+          style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+        >
+          <Link href={`/shift/${item.id}`} asChild>
+            <Pressable style={{ flex: 1 }}>
+              <Text style={{ fontWeight: '600' }}>
+                {item.date} • {item.shift_type}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
+                <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
+                <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
+              </View>
+            </Pressable>
+          </Link>
+        </Pressable>
       </Swipeable>
     );
   };
