@@ -261,41 +261,47 @@ export default function InsightsScreen() {
   }, [filtered, sow]);
 
   return (
-    <ScrollView
-      contentContainerStyle={{ padding: 16, gap: 14 }}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
-    >
-      <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
+    <>
+      {!loading && filtered.length === 0 ? (
+        // Use View for empty state to allow proper centering
+        <View style={{ flex: 1 }}>
+          <View style={{ padding: 16, paddingBottom: 0 }}>
+            <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
+          </View>
+          <EmptyState
+            icon="📈"
+            title="No insights yet"
+            subtitle={
+              rows.length === 0 
+                ? "Add some shifts to see your earning insights and trends."
+                : "No shifts match your current filters. Try adjusting the date range or shift type."
+            }
+            tipTitle="💡 What you'll see"
+            tipText="Track your best days, shift types, and earning trends over time!"
+            iconBgColor="#fff3cd"
+            iconColor="#856404"
+          />
+        </View>
+      ) : (
+        // Use ScrollView for content
+        <ScrollView
+          contentContainerStyle={{ padding: 16, gap: 14 }}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+        >
+          <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
 
-      {/* Empty state for no data */}
-      {!loading && filtered.length === 0 && (
-        <EmptyState
-          icon="📈"
-          title="No insights yet"
-          subtitle={
-            rows.length === 0 
-              ? "Add some shifts to see your earning insights and trends."
-              : "No shifts match your current filters. Try adjusting the date range or shift type."
-          }
-          tipTitle="💡 What you'll see"
-          tipText="Track your best days, shift types, and earning trends over time!"
-          iconBgColor="#fff3cd"
-          iconColor="#856404"
-        />
-      )}
+          {/* Show filters and metrics/charts only when there's data */}
+          {filtered.length > 0 && (
+            <>
+              {FilterBarComp ? (
+                <FilterBarComp range={range} setRange={setRange} shift={shift} setShift={setShift} />
+              ) : (
+                <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+                  <Text>Loading filters…</Text>
+                </View>
+              )}
 
-      {/* Show filters and metrics/charts only when there's data */}
-      {filtered.length > 0 && (
-        <>
-          {FilterBarComp ? (
-            <FilterBarComp range={range} setRange={setRange} shift={shift} setShift={setShift} />
-          ) : (
-            <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
-              <Text>Loading filters…</Text>
-            </View>
-          )}
-
-          {/* Show metrics and charts only when there's data */}
+              {/* Show metrics and charts only when there's data */}
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Card title="Shifts" value={String(metrics.count)} />
             <Card title="Hours" value={String(metrics.hours)} />
@@ -369,8 +375,8 @@ export default function InsightsScreen() {
           </View>
           </>
           )}
-        </>
+        </ScrollView>
       )}
-    </ScrollView>
+    </>
   );
 }
