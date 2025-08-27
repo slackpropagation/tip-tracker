@@ -26,7 +26,7 @@ type Row = {
 export default function HistoryScreen() {
   const router = useRouter();
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
-  const { showToast, ToastComponent, resetToast } = useToast();
+  const { showToast, ToastComponent } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [undoVisible, setUndoVisible] = useState(false);
@@ -52,33 +52,12 @@ export default function HistoryScreen() {
 
   useEffect(() => { 
     load(); 
-    
-    // Cleanup function to reset toast when component unmounts
-    return () => {
-      console.log('History screen unmounting - cleaning up toast state');
-      // Only reset if we're not in the middle of a delete operation
-      if (!undoVisible) {
-        resetToast();
-      }
-    };
   }, [load]);
 
   useFocusEffect(
     useCallback(() => {
       load();
-      // Add a small delay to prevent race conditions with immediate operations
-      const timer = setTimeout(() => {
-        // Only reset toast if we're not in the middle of a delete operation
-        if (!undoVisible) {
-          console.log('History screen focused - resetting toast state (no active delete)');
-          resetToast();
-        } else {
-          console.log('History screen focused - keeping toast state (active delete in progress)');
-        }
-      }, 500); // 500ms delay to allow operations to complete
-      
-      return () => clearTimeout(timer);
-    }, [load, undoVisible])
+    }, [load])
   );
 
   const confirmAndDelete = useCallback((id: string) => {
@@ -104,9 +83,6 @@ export default function HistoryScreen() {
         console.log('showToast function:', showToast);
         showToast('Shift deleted successfully! 🗑️', 'success');
         console.log('showToast called successfully');
-        
-        // Small delay to ensure toast is visible before any cleanup
-        await new Promise(resolve => setTimeout(resolve, 100));
         
         console.log('Setting up auto-hide timer');
         // auto-hide after 4s
