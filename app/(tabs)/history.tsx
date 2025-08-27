@@ -56,17 +56,24 @@ export default function HistoryScreen() {
     // Cleanup function to reset toast when component unmounts
     return () => {
       console.log('History screen unmounting - cleaning up toast state');
-      resetToast();
+      // Only reset if we're not in the middle of a delete operation
+      if (!undoVisible) {
+        resetToast();
+      }
     };
   }, [load]);
 
   useFocusEffect(
     useCallback(() => {
       load();
-      // Reset any lingering toast state when returning to this screen
-      console.log('History screen focused - resetting toast state');
-      resetToast();
-    }, [load])
+      // Only reset toast if we're not in the middle of a delete operation
+      if (!undoVisible) {
+        console.log('History screen focused - resetting toast state (no active delete)');
+        resetToast();
+      } else {
+        console.log('History screen focused - keeping toast state (active delete in progress)');
+      }
+    }, [load, undoVisible])
   );
 
   const confirmAndDelete = useCallback((id: string) => {
@@ -92,6 +99,9 @@ export default function HistoryScreen() {
         console.log('ToastComponent:', ToastComponent);
         showToast('Shift deleted successfully! 🗑️', 'success');
         console.log('showToast called - checking if toast appears');
+        
+        // Small delay to ensure toast is visible before any cleanup
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         console.log('Setting up auto-hide timer');
         // auto-hide after 4s
