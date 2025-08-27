@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { View, Text, FlatList, RefreshControl, Pressable, Platform, Modal } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { useFocusEffect, Link } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { getShifts, deleteShift, insertShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { useRouter } from 'expo-router';
@@ -94,6 +94,7 @@ export default function HistoryScreen() {
     };
 
     console.log('Showing confirmation dialog');
+    console.log('showConfirm function:', showConfirm);
     showConfirm(
       'Delete Shift',
       'Are you sure you want to delete this shift?',
@@ -212,7 +213,27 @@ export default function HistoryScreen() {
       <View style={{ padding: 16, paddingBottom: 0 }}>
         <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
         
-
+        {/* Debug: Direct delete test */}
+        {rows.length > 0 && (
+          <Pressable
+            onPress={() => {
+              console.log('Direct delete test - calling deleteShift directly');
+              deleteShift(rows[0].id).then(() => {
+                console.log('Direct delete completed');
+                load();
+              });
+            }}
+            style={{
+              backgroundColor: '#ff6b6b',
+              padding: 8,
+              borderRadius: 6,
+              marginTop: 8,
+              alignSelf: 'flex-start'
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Direct Delete Test</Text>
+          </Pressable>
+        )}
       </View>
       <FlatList
         data={rows}
