@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { View, Text, FlatList, RefreshControl, Pressable, Platform, Alert } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { useFocusEffect, Link } from 'expo-router';
 import { getShifts, deleteShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
@@ -62,6 +63,20 @@ export default function HistoryScreen() {
     }
   }, [load]);
 
+  const renderRightActions = (id: string) => (
+    <Pressable
+      onPress={() => confirmAndDelete(id)}
+      style={{
+        width: 96,
+        backgroundColor: '#b00020',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text style={{ color: 'white', fontWeight: '700' }}>Delete</Text>
+    </Pressable>
+  );
+
   const renderItem = ({ item }: { item: Row }) => {
     const m = computeShiftMetrics({
       hours_worked: item.hours_worked,
@@ -74,21 +89,23 @@ export default function HistoryScreen() {
       tip_out_override_amount: item.tip_out_override_amount,
     });
     return (
-      <Link href={`/shift/${item.id}`} asChild>
-        <Pressable
-          onLongPress={() => confirmAndDelete(item.id)}
-          delayLongPress={400}
-          style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
-        >
-          <Text style={{ fontWeight: '600' }}>
-            {item.date} • {item.shift_type}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
-            <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
-            <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
-          </View>
-        </Pressable>
-      </Link>
+      <Swipeable renderRightActions={() => renderRightActions(item.id)} overshootRight={false} friction={2}>
+        <Link href={`/shift/${item.id}`} asChild>
+          <Pressable
+            onLongPress={() => confirmAndDelete(item.id)}
+            delayLongPress={400}
+            style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+          >
+            <Text style={{ fontWeight: '600' }}>
+              {item.date} • {item.shift_type}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
+              <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
+              <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
+            </View>
+          </Pressable>
+        </Link>
+      </Swipeable>
     );
   };
 
