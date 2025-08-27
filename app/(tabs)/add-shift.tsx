@@ -130,7 +130,6 @@ export default function AddShiftScreen() {
         <TextInput
           value={hours}
           onChangeText={(v) => setHours(sanitize(v))}
-          placeholder="6.5"
           keyboardType="decimal-pad"
           inputMode="decimal"
         />
@@ -226,7 +225,7 @@ export default function AddShiftScreen() {
       {/* Notes */}
       <View style={fieldBox}>
         <Text style={{ fontWeight: '600', marginBottom: 4 }}>Notes (optional)</Text>
-        <TextInput value={notes} onChangeText={setNotes} placeholder="#patio #tourists" />
+        <TextInput value={notes} onChangeText={setNotes} />
       </View>
 
       {/* Live preview */}
