@@ -67,7 +67,6 @@ export default function AddShiftScreen() {
 
   const errors: string[] = [];
   if (!date) errors.push('Date required');
-  if (!(hoursNum > 0 && hoursNum <= 18)) errors.push('Hours must be between 0 and 18');
   if (!(baseWageNum >= 0)) errors.push('Base wage must be ≥ 0');
   if (!(pctNum >= 0 && pctNum <= 100)) errors.push('Tip-out percent must be 0–100');
   if (basis === 'sales' && !sales) errors.push('Sales required when basis = sales');
