@@ -8,6 +8,8 @@ import { parseCsv, importCsv } from '../../data/csvImport.web';
 export default function SettingsScreen() {
   const [log, setLog] = useState('');
   const [prefs, setPrefs] = useState(getAll());
+  const [pendingPrefs, setPendingPrefs] = useState(getAll());
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [importInfo, setImportInfo] = useState<{ rows: number; skipped: number; errors: string[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [confirmWipeVisible, setConfirmWipeVisible] = useState(false);
@@ -19,8 +21,25 @@ export default function SettingsScreen() {
   }, []);
 
   const update = (key: keyof typeof prefs, value: any) => {
-    setPrefs(p => ({ ...p, [key]: value }));
-    set(key as any, value);
+    setPendingPrefs(p => ({ ...p, [key]: value }));
+    setHasUnsavedChanges(true);
+  };
+
+  const applyChanges = () => {
+    // Save all pending changes to storage
+    Object.entries(pendingPrefs).forEach(([key, value]) => {
+      set(key as any, value);
+    });
+    // Update the main prefs state
+    setPrefs(pendingPrefs);
+    setHasUnsavedChanges(false);
+    append('[OK] Settings applied successfully');
+  };
+
+  const discardChanges = () => {
+    setPendingPrefs(prefs);
+    setHasUnsavedChanges(false);
+    append('[Info] Changes discarded');
   };
 
   const append = (msg: string) => {
@@ -136,37 +155,45 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Preferences</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: '600' }}>Preferences</Text>
+        {hasUnsavedChanges && (
+          <Text style={{ fontSize: 12, color: '#FF9500', fontWeight: '500' }}>• Unsaved Changes</Text>
+        )}
+      </View>
       <View style={{ marginBottom: 8 }}>
         <Button
           title="Reset to defaults"
           onPress={() => {
             reset();
-            setPrefs(getAll());
+            const defaults = getAll();
+            setPrefs(defaults);
+            setPendingPrefs(defaults);
+            setHasUnsavedChanges(false);
           }}
         />
       </View>
 
       <Text>Start of Week</Text>
       <Pressable onPress={() => update('startOfWeek', 'sun')}>
-        <Text>{prefs.startOfWeek === 'sun' ? '●' : '○'} Sunday</Text>
+        <Text>{pendingPrefs.startOfWeek === 'sun' ? '●' : '○'} Sunday</Text>
       </Pressable>
       <Pressable onPress={() => update('startOfWeek', 'mon')}>
-        <Text>{prefs.startOfWeek === 'mon' ? '●' : '○'} Monday</Text>
+        <Text>{pendingPrefs.startOfWeek === 'mon' ? '●' : '○'} Monday</Text>
       </Pressable>
 
       <Text style={{ marginTop: 12 }}>Default Tip-Out Basis</Text>
       <Pressable onPress={() => update('defaultTipOutBasis', 'tips')}>
-        <Text>{prefs.defaultTipOutBasis === 'tips' ? '●' : '○'} Tips</Text>
+        <Text>{pendingPrefs.defaultTipOutBasis === 'tips' ? '●' : '○'} Tips</Text>
       </Pressable>
       <Pressable onPress={() => update('defaultTipOutBasis', 'sales')}>
-        <Text>{prefs.defaultTipOutBasis === 'sales' ? '●' : '○'} Sales</Text>
+        <Text>{pendingPrefs.defaultTipOutBasis === 'sales' ? '●' : '○'} Sales</Text>
       </Pressable>
 
       <Text style={{ marginTop: 12 }}>Default Tip-Out Percent</Text>
       <TextInput
         keyboardType="numeric"
-        value={String(prefs.defaultTipOutPercent ?? defaults.defaultTipOutPercent)}
+        value={String(pendingPrefs.defaultTipOutPercent ?? defaults.defaultTipOutPercent)}
         onChangeText={(txt) => {
           const n = Number(txt.replace(',', '.'));
           if (!Number.isNaN(n) && n >= 0 && n <= 100) update('defaultTipOutPercent', n);
@@ -178,7 +205,7 @@ export default function SettingsScreen() {
       <Text style={{ marginTop: 12 }}>Default Hourly Wage</Text>
       <TextInput
         keyboardType="numeric"
-        value={String(prefs.defaultHourlyWage ?? defaults.defaultHourlyWage)}
+        value={String(pendingPrefs.defaultHourlyWage ?? defaults.defaultHourlyWage)}
         onChangeText={(txt) => {
           const n = Number(txt.replace(',', '.'));
           if (!Number.isNaN(n) && n >= 0) update('defaultHourlyWage', n);
@@ -189,9 +216,25 @@ export default function SettingsScreen() {
 
       <Text style={{ marginTop: 12 }}>Remember Last Wage</Text>
       <Switch
-        value={prefs.rememberLastWage}
+        value={pendingPrefs.rememberLastWage}
         onValueChange={(val) => update('rememberLastWage', val)}
       />
+
+      {/* Apply/Discard Changes */}
+      {hasUnsavedChanges && (
+        <View style={{ marginTop: 16, flexDirection: 'row', gap: 12 }}>
+          <Button 
+            title="Apply Changes" 
+            onPress={applyChanges}
+            color="#007AFF"
+          />
+          <Button 
+            title="Discard Changes" 
+            onPress={discardChanges}
+            color="#FF3B30"
+          />
+        </View>
+      )}
 
       <Text style={{ fontSize: 18, fontWeight: '600', marginTop: 24 }}>Developer Tools</Text>
       <Button title="Init DB" onPress={handleInit} />
