@@ -469,34 +469,18 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
                     tickFormat={(t: string) => t} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, angle: 0, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryLine
                     data={dailySeries}
                     x="x"
                     y="eff"
-                    style={{
-                      data: {
-                        stroke: "#2f95dc",
-                        strokeWidth: 4
-                      }
-                    }}
                     interpolation="monotoneX"
                   />
                   <V.VictoryScatter
@@ -504,25 +488,12 @@ export default function InsightsScreen() {
                     x="x"
                     y="eff"
                     size={5}
-                    style={{
-                      data: {
-                        fill: "#2f95dc",
-                        stroke: "white",
-                        strokeWidth: 2
-                      }
-                    }}
                   />
                   <V.VictoryScatter
                     data={dailySeries}
                     x="x"
                     y="eff"
                     size={8}
-                    style={{
-                      data: {
-                        fill: "#2f95dc",
-                        fillOpacity: 0.2
-                      }
-                    }}
                   />
                 </V.VictoryChart>
               </View>
@@ -536,39 +507,20 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
                     tickFormat={(t: string) => t} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryBar
                     data={dailySeries}
                     x="x"
                     y="tips"
-                    style={{
-                      data: {
-                        fill: "#28a745",
-                        stroke: "#28a745",
-                        strokeWidth: 1
-                      }
-                    }}
                     cornerRadius={4}
                   />
-                  <defs>
-                  </defs>
                 </V.VictoryChart>
               </View>
 
@@ -581,34 +533,18 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
                     tickFormat={(t: string) => t} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryLine
                     data={weeklySeries}
                     x="x"
                     y="eff"
-                    style={{
-                      data: {
-                        stroke: "#ff6b6b",
-                        strokeWidth: 4
-                      }
-                    }}
                     interpolation="monotoneX"
                   />
                   <V.VictoryScatter
@@ -616,25 +552,12 @@ export default function InsightsScreen() {
                     x="x"
                     y="eff"
                     size={6}
-                    style={{
-                      data: {
-                        fill: "#ff6b6b",
-                        stroke: "white",
-                        strokeWidth: 2
-                      }
-                    }}
                   />
                   <V.VictoryScatter
                     data={weeklySeries}
                     x="x"
                     y="eff"
                     size={10}
-                    style={{
-                      data: {
-                        fill: "#ff6b6b",
-                        fillOpacity: 0.2
-                      }
-                    }}
                   />
                 </V.VictoryChart>
               </View>
@@ -648,39 +571,20 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
                     tickFormat={(t: string) => t} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryBar
                     data={weeklySeries}
                     x="x"
                     y="tips"
-                    style={{
-                      data: {
-                        fill: "#fd7e14",
-                        stroke: "#fd7e14",
-                        strokeWidth: 3
-                      }
-                    }}
                     cornerRadius={4}
                   />
-                  <defs>
-                  </defs>
                 </V.VictoryChart>
               </View>
 
@@ -693,22 +597,12 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 24, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryBar
                     data={Object.entries(heatmapData).reduce((acc, [dow, shifts]) => {
@@ -726,13 +620,6 @@ export default function InsightsScreen() {
                     }, [] as Array<{x: string, y: number, fill: string}>)}
                     x="x"
                     y="y"
-                    style={{
-                      data: {
-                        fill: ({ datum }: any) => datum.fill,
-                        stroke: "#333",
-                        strokeWidth: 1
-                      }
-                    }}
                     cornerRadius={4}
                   />
                 </V.VictoryChart>
@@ -747,22 +634,12 @@ export default function InsightsScreen() {
                 <V.VictoryChart 
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
-                  style={{
-                  }}
                 >
                   <V.VictoryAxis 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryAxis 
                     dependentAxis 
                     tickFormat={(t: number) => `$${t}`} 
-                    style={{ 
-                      tickLabels: { fontSize: 10, fill: '#666' },
-                      axis: { stroke: '#ddd' }
-                    }} 
                   />
                   <V.VictoryBar
                     data={[
@@ -774,13 +651,6 @@ export default function InsightsScreen() {
                     ]}
                     x="x"
                     y="y"
-                    style={{
-                      data: {
-                        fill: ({ datum }: any) => datum.fill,
-                        stroke: "#333",
-                        strokeWidth: 1
-                      }
-                    }}
                     cornerRadius={4}
                   />
                 </V.VictoryChart>
