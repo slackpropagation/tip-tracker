@@ -93,6 +93,11 @@ export default function InsightsScreen() {
   const sow = getStartOfWeekSetting();
   const thisWeekStartKey = startOfWeek(new Date(), sow).toDateString();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[DEBUG] Insights component rendered - loading:', loading, 'rows.length:', rows.length);
+  }, [loading, rows.length]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -111,10 +116,15 @@ export default function InsightsScreen() {
   );
 
   const filtered = useMemo(
-    () => rows
-      .filter(r => isInRange(r.date, range))
-      .filter(r => isShiftMatch(r.shift_type, shift)),
-    [rows, range, shift]
+    () => {
+      const result = rows
+        .filter(r => isInRange(r.date, range))
+        .filter(r => isShiftMatch(r.shift_type, shift));
+      // Debug logging
+      console.log('[DEBUG] Insights - filtered.length:', result.length, 'should show empty state:', !loading && result.length === 0);
+      return result;
+    },
+    [rows, range, shift, loading]
   );
 
   const metrics = useMemo(() => {
