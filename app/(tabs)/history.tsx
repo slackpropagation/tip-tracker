@@ -196,7 +196,7 @@ export default function HistoryScreen() {
     return (
       <View style={{ flex: 1 }}>
         <View style={{ padding: 16, paddingBottom: 0 }}>
-          <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
+          <Text style={{ fontSize: 28, fontWeight: '700' }}>History</Text>
         </View>
         <EmptyState
           icon="📊"
@@ -212,7 +212,7 @@ export default function HistoryScreen() {
   return (
     <>
       <View style={{ padding: 16, paddingBottom: 0 }}>
-        <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
+        <Text style={{ fontSize: 28, fontWeight: '700' }}>History</Text>
         
 
       </View>

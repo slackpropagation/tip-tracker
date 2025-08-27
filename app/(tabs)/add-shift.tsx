@@ -106,7 +106,7 @@ export default function AddShiftScreen() {
   return (
     <>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: '600' }}>Add Shift</Text>
+        <Text style={{ fontSize: 28, fontWeight: '700' }}>Add Shift</Text>
 
       {/* Date */}
       <View style={fieldBox}>
