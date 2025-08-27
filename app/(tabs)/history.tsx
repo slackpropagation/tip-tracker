@@ -182,6 +182,7 @@ export default function HistoryScreen() {
               {item.date} • {item.shift_type}
             </Text>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
+              <Text>Gross: ${(item.cash_tips + item.card_tips + (item.base_hourly_wage * item.hours_worked)).toFixed(2)}</Text>
               <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
               <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
             </View>
