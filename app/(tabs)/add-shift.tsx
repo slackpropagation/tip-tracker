@@ -101,8 +101,7 @@ export default function AddShiftScreen() {
   return (
     <>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-        <ToastComponent />
-      <Text style={{ fontSize: 20, fontWeight: '600' }}>Add Shift</Text>
+        <Text style={{ fontSize: 20, fontWeight: '600' }}>Add Shift</Text>
 
       {/* Date */}
       <View style={fieldBox}>
@@ -267,7 +266,8 @@ export default function AddShiftScreen() {
       <Text style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
         {Platform.OS === 'web' ? 'Using web storage (AsyncStorage polyfill)' : 'Using SQLite on device'}
       </Text>
-      <ToastComponent />
     </ScrollView>
+    <ToastComponent />
+  </>
   );
 }
