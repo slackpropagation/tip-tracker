@@ -147,6 +147,8 @@ export default function HistoryScreen() {
   );
 
   const renderItem = ({ item }: { item: Row }) => {
+    console.log('Rendering shift item:', item.id, item.date);
+    
     const m = computeShiftMetrics({
       hours_worked: item.hours_worked,
       cash_tips: item.cash_tips,
@@ -159,6 +161,7 @@ export default function HistoryScreen() {
     });
     
     const handlePress = () => {
+      console.log('Navigating to shift detail:', item.id);
       router.push(`/shift/${item.id}`);
     };
     
@@ -208,6 +211,25 @@ export default function HistoryScreen() {
     <>
       <View style={{ padding: 16, paddingBottom: 0 }}>
         <Text style={{ fontSize: 20, fontWeight: '700' }}>History</Text>
+        
+        {/* Temporary test button */}
+        {rows.length > 0 && (
+          <Pressable
+            onPress={() => {
+              console.log('Test delete button pressed');
+              confirmAndDelete(rows[0].id);
+            }}
+            style={{
+              backgroundColor: '#ff6b6b',
+              padding: 8,
+              borderRadius: 6,
+              marginTop: 8,
+              alignSelf: 'flex-start'
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Delete First Shift</Text>
+          </Pressable>
+        )}
       </View>
       <FlatList
         data={rows}
