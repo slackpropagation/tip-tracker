@@ -278,7 +278,7 @@ export default function InsightsScreen() {
         // Use View for empty state to allow proper centering
         <View style={{ flex: 1 }}>
           <View style={{ padding: 16, paddingBottom: 0 }}>
-            <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
+            <Text style={{ fontSize: 28, fontWeight: '700' }}>Insights</Text>
           </View>
           <EmptyState
             icon="📈"
@@ -297,7 +297,7 @@ export default function InsightsScreen() {
       ) : (
         // Use ScrollView for content
         <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}>
-          <Text style={{ fontSize: 20, fontWeight: '700' }}>Insights</Text>
+          <Text style={{ fontSize: 28, fontWeight: '700' }}>Insights</Text>
 
           {/* Show filters and metrics/charts only when there's data */}
           {filtered.length > 0 && (

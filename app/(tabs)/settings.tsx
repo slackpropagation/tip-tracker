@@ -155,6 +155,7 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
+      <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <Text style={{ fontSize: 18, fontWeight: '600' }}>Preferences</Text>
         {hasUnsavedChanges && (
