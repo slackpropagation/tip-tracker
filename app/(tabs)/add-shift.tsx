@@ -149,7 +149,6 @@ export default function AddShiftScreen() {
             <TextInput
               value={cash}
               onChangeText={(v) => setCash(sanitize(v))}
-              placeholder="120"
               keyboardType="decimal-pad"
               inputMode="decimal"
             />
@@ -159,7 +158,6 @@ export default function AddShiftScreen() {
             <TextInput
               value={card}
               onChangeText={(v) => setCard(sanitize(v))}
-              placeholder="280"
               keyboardType="decimal-pad"
               inputMode="decimal"
             />
