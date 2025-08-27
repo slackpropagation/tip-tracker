@@ -163,8 +163,7 @@ export default function SettingsScreen() {
         )}
       </View>
       <View style={{ marginBottom: 8 }}>
-        <Button
-          title="Reset to defaults"
+        <Pressable
           onPress={() => {
             reset();
             const defaults = getAll();
@@ -172,7 +171,15 @@ export default function SettingsScreen() {
             setPendingPrefs(defaults);
             setHasUnsavedChanges(false);
           }}
-        />
+          style={{
+            backgroundColor: '#2f95dc',
+            paddingVertical: 14,
+            borderRadius: 10,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '700' }}>Reset to defaults</Text>
+        </Pressable>
       </View>
 
       <Text>Start of Week</Text>
@@ -224,29 +231,90 @@ export default function SettingsScreen() {
       {/* Apply/Discard Changes */}
       {hasUnsavedChanges && (
         <View style={{ marginTop: 16, flexDirection: 'row', gap: 12 }}>
-          <Button 
-            title="Apply Changes" 
+          <Pressable 
             onPress={applyChanges}
-            color="#007AFF"
-          />
-          <Button 
-            title="Discard Changes" 
+            style={{
+              backgroundColor: '#007AFF',
+              paddingVertical: 14,
+              borderRadius: 10,
+              alignItems: 'center',
+              flex: 1
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: '700' }}>Apply Changes</Text>
+          </Pressable>
+          <Pressable 
             onPress={discardChanges}
-            color="#FF3B30"
-          />
+            style={{
+              backgroundColor: '#FF3B30',
+              paddingVertical: 14,
+              borderRadius: 10,
+              alignItems: 'center',
+              flex: 1
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: '700' }}>Discard Changes</Text>
+          </Pressable>
         </View>
       )}
 
       <Text style={{ fontSize: 18, fontWeight: '600', marginTop: 24 }}>Developer Tools</Text>
-      <Button title="Init DB" onPress={handleInit} />
-      <Button title="Seed sample data" onPress={handleSeed} />
-      <Button title="List shifts" onPress={handleList} />
-      <Button title="Delete ALL shifts" onPress={handleWipe} />
-      <Button title="Export CSV" onPress={handleExport} />
+      <Pressable onPress={handleInit} style={{
+        backgroundColor: '#2f95dc',
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 8
+      }}>
+        <Text style={{ color: 'white', fontWeight: '700' }}>Init DB</Text>
+      </Pressable>
+      <Pressable onPress={handleSeed} style={{
+        backgroundColor: '#2f95dc',
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 8
+      }}>
+        <Text style={{ color: 'white', fontWeight: '700' }}>Seed sample data</Text>
+      </Pressable>
+      <Pressable onPress={handleList} style={{
+        backgroundColor: '#2f95dc',
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 8
+      }}>
+        <Text style={{ color: 'white', fontWeight: '700' }}>List shifts</Text>
+      </Pressable>
+      <Pressable onPress={handleWipe} style={{
+        backgroundColor: '#2f95dc',
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 8
+      }}>
+        <Text style={{ color: 'white', fontWeight: '700' }}>Delete ALL shifts</Text>
+      </Pressable>
+      <Pressable onPress={handleExport} style={{
+        backgroundColor: '#2f95dc',
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 8
+      }}>
+        <Text style={{ color: 'white', fontWeight: '700' }}>Export CSV</Text>
+      </Pressable>
 
       {/* Import CSV (web) */}
       <View style={{ marginTop: 12 }}>
-        <Button title="Import CSV" onPress={handlePickCsv} />
+        <Pressable onPress={handlePickCsv} style={{
+          backgroundColor: '#2f95dc',
+          paddingVertical: 14,
+          borderRadius: 10,
+          alignItems: 'center'
+        }}>
+          <Text style={{ color: 'white', fontWeight: '700' }}>Import CSV</Text>
+        </Pressable>
         {/* @ts-ignore: RN Web allows raw input elements */}
         <input
           ref={fileInputRef}
