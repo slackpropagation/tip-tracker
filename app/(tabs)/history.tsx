@@ -270,6 +270,8 @@ export default function HistoryScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
         key={rows.length} // Force re-render when data changes
       />
+      
+      <ToastComponent />
 
       {/* Undo toast */}
       <Modal transparent visible={undoVisible} animationType="fade" onRequestClose={() => setUndoVisible(false)}>
@@ -283,7 +285,6 @@ export default function HistoryScreen() {
         </View>
       </Modal>
       <ConfirmDialogComponent />
-      <ToastComponent />
       {/* Debug: Check if ToastComponent is rendered */}
       <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'red', padding: 5 }}>
         <Text style={{ color: 'white', fontSize: 10 }}>Toast Debug: {ToastComponent ? 'Present' : 'Missing'}</Text>
