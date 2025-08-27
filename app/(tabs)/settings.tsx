@@ -1,13 +1,16 @@
-import { View, Text, Button, ScrollView, TextInput, Pressable, Switch } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text, Button, ScrollView, TextInput, Pressable, Switch, Modal } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
 import { getAll, set, defaults, reset } from '../../data/settings.web';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
-import { computeShiftMetrics } from '../../data/calculations';
 import { exportCsv } from '../../data/csv.web';
+import { parseCsv, importCsv } from '../../data/csvImport.web';
 
 export default function SettingsScreen() {
   const [log, setLog] = useState('');
   const [prefs, setPrefs] = useState(getAll());
+  const [importInfo, setImportInfo] = useState<{ rows: number; skipped: number; errors: string[] } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [confirmWipeVisible, setConfirmWipeVisible] = useState(false);
 
   useEffect(() => {
     setPrefs(getAll());
@@ -53,13 +56,19 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleWipe = async () => {
+  const handleWipe = () => {
+    setConfirmWipeVisible(true);
+  };
+
+  const performWipe = async () => {
     try {
       await deleteAllShifts();
       append('[OK] Deleted all shifts');
     } catch (e: any) {
       append('[ERR] wipe: ' + (e?.message ?? String(e)));
       console.error(e);
+    } finally {
+      setConfirmWipeVisible(false);
     }
   };
 
@@ -71,6 +80,48 @@ export default function SettingsScreen() {
       append('[ERR] export: ' + (e?.message ?? String(e)));
       console.error(e);
     }
+  };
+
+  const handlePickCsv = () => {
+    if (typeof window === 'undefined') {
+      append('[Info] Import is web-only for now.');
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: any) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      const res = parseCsv(text);
+      setImportInfo({ rows: res.rows.length, skipped: res.skipped, errors: res.errors.slice(0, 5) });
+      append(`[OK] Parsed CSV: ${res.rows.length} valid, ${res.skipped} skipped`);
+      // Store parsed rows on the ref so we can import on demand
+      (fileInputRef as any).parsedRows = res.rows;
+    } catch (err: any) {
+      append('[ERR] parse: ' + (err?.message ?? String(err)));
+      console.error(err);
+    } finally {
+      // reset input so picking the same file again re-triggers change
+      if (fileInputRef.current) fileInputRef.current.value = '' as any;
+    }
+  };
+
+  const handleImportAppend = async () => {
+    const rows = (fileInputRef as any).parsedRows || [];
+    if (!rows.length) { append('[Info] No parsed rows to import.'); return; }
+    const { inserted } = await importCsv({ mode: 'append', rows });
+    append(`[OK] Imported ${inserted} rows (append)`);
+  };
+
+  const handleImportReplace = async () => {
+    const rows = (fileInputRef as any).parsedRows || [];
+    if (!rows.length) { append('[Info] No parsed rows to import.'); return; }
+    if (!confirm('Replace ALL existing shifts with the CSV data? This cannot be undone.')) return;
+    const { inserted } = await importCsv({ mode: 'replace', rows });
+    append(`[OK] Imported ${inserted} rows (replace all)`);
   };
 
   return (
@@ -126,6 +177,57 @@ export default function SettingsScreen() {
       <Button title="List shifts" onPress={handleList} />
       <Button title="Delete ALL shifts" onPress={handleWipe} />
       <Button title="Export CSV" onPress={handleExport} />
+
+      {/* Import CSV (web) */}
+      <View style={{ marginTop: 12 }}>
+        <Button title="Import CSV" onPress={handlePickCsv} />
+        {/* @ts-ignore: RN Web allows raw input elements */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        {importInfo && (
+          <View style={{ marginTop: 8 }}>
+            <Text>Parsed: {importInfo.rows} valid, {importInfo.skipped} skipped</Text>
+            {importInfo.errors.length > 0 && (
+              <View style={{ marginTop: 4 }}>
+                <Text style={{ fontWeight: '600' }}>Warnings/Errors (first 5):</Text>
+                {importInfo.errors.map((e, idx) => (
+                  <Text key={idx} style={{ color: '#a00' }}>• {e}</Text>
+                ))}
+              </View>
+            )}
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              <Button title="Append" onPress={handleImportAppend} />
+              <Button title="Replace all" color="#b00" onPress={handleImportReplace} />
+            </View>
+          </View>
+        )}
+      </View>
+
+      <Modal
+        transparent
+        visible={confirmWipeVisible}
+        animationType="fade"
+        onRequestClose={() => setConfirmWipeVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: 'white', padding: 16, borderRadius: 8, width: '85%', maxWidth: 420 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', marginBottom: 8 }}>Delete all data?</Text>
+            <Text style={{ marginBottom: 12 }}>
+              This will permanently delete all shifts from your device. This action cannot be undone.
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
+              <Button title="Cancel" onPress={() => setConfirmWipeVisible(false)} />
+              <Button title="Delete" color="#b00" onPress={performWipe} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Text selectable style={{ marginTop: 12, fontFamily: 'Courier' }}>{log}</Text>
     </ScrollView>
   );
