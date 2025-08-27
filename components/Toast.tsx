@@ -134,17 +134,21 @@ export function useToast() {
     message: '',
     type: 'info'
   });
+  
+  console.log('useToast state changed:', toast);
 
   const showToast = useCallback((
     message: string,
     type: ToastType = 'info',
     duration: number = 3000
   ) => {
+    console.log('useToast showToast called with:', { message, type, duration });
     setToast({
       visible: true,
       message,
       type
     });
+    console.log('useToast setToast called with visible: true');
   }, []);
 
   const hideToast = useCallback(() => {
