@@ -175,6 +175,18 @@ export default function SettingsScreen() {
       />
       <Text style={{ color: '#666', fontSize: 12 }}>Enter percent between 0 and 100.</Text>
 
+      <Text style={{ marginTop: 12 }}>Default Hourly Wage</Text>
+      <TextInput
+        keyboardType="numeric"
+        value={String(prefs.defaultHourlyWage ?? defaults.defaultHourlyWage)}
+        onChangeText={(txt) => {
+          const n = Number(txt.replace(',', '.'));
+          if (!Number.isNaN(n) && n >= 0) update('defaultHourlyWage', n);
+        }}
+        style={{ borderWidth: 1, borderColor: '#ccc', padding: 6, marginBottom: 8 }}
+      />
+      <Text style={{ color: '#666', fontSize: 12 }}>Enter your default hourly wage in dollars.</Text>
+
       <Text style={{ marginTop: 12 }}>Remember Last Wage</Text>
       <Switch
         value={prefs.rememberLastWage}

@@ -9,7 +9,8 @@ export type SettingsKey =
   | 'defaultTipOutBasis'
   | 'defaultTipOutPercent'
   | 'rememberLastWage'
-  | 'lastWage';
+  | 'lastWage'
+  | 'defaultHourlyWage';
 
 export type StartOfWeek = 'sun' | 'mon';
 export type TipOutBasis = 'tips' | 'sales';
@@ -20,6 +21,7 @@ export interface Settings {
   defaultTipOutPercent: number;        // default % (0–100)
   rememberLastWage: boolean;           // whether to prefill wage from last entry
   lastWage: number | null;             // cached last wage when rememberLastWage=true
+  defaultHourlyWage: number;           // default hourly wage for new shifts
 }
 
 const DEFAULTS: Settings = {
@@ -28,6 +30,7 @@ const DEFAULTS: Settings = {
   defaultTipOutPercent: 0,
   rememberLastWage: false,
   lastWage: null,
+  defaultHourlyWage: 15.00,
 };
 
 function parse<T>(raw: string | null, fallback: T): T {
