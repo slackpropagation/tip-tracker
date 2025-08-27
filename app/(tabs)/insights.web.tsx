@@ -1,21 +1,21 @@
 // app/(tabs)/insights.web.tsx
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
-import { getShifts } from '../../data/db';
-import { computeShiftMetrics } from '../../data/calculations';
-import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
-import { getAll as getAllSettings } from '../../data/settings.web';
-import { EmptyState } from '../../components/EmptyState';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import {
-  VictoryAxis,
-  VictoryBar,
-  VictoryBoxPlot,
-  VictoryChart,
-  VictoryLabel,
-  VictoryLegend,
-  VictoryScatter,
+    VictoryAxis,
+    VictoryBar,
+    VictoryBoxPlot,
+    VictoryChart,
+    VictoryLabel,
+    VictoryLegend,
+    VictoryScatter,
 } from 'victory';
+import { EmptyState } from '../../components/EmptyState';
+import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
+import { computeShiftMetrics } from '../../data/calculations';
+import { getShifts } from '../../data/db';
+import { getAll as getAllSettings } from '../../data/settings.web';
 
 // ---------- small UI helpers ----------
 const Card = ({ title, value, subtitle, badge }: {

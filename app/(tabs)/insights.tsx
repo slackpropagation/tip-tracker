@@ -1,11 +1,11 @@
 // app/(tabs)/insights.tsx (native: iOS/Android)
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
-import { getShifts } from '../../data/db';
-import { computeShiftMetrics } from '../../data/calculations';
-import type { RangeKey, ShiftKey } from '../../components/FilterBar';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EmptyState } from '../../components/EmptyState';
+import type { RangeKey, ShiftKey } from '../../components/FilterBar';
+import { computeShiftMetrics } from '../../data/calculations';
+import { getShifts } from '../../data/db';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const FBraw = require('../../components/FilterBar');
 const FilterBarComp = (FBraw && (FBraw.FilterBar || FBraw.default?.FilterBar || FBraw.default)) as
