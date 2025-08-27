@@ -9,6 +9,7 @@ import {
     VictoryChart,
     VictoryLabel,
     VictoryLegend,
+    VictoryLine,
     VictoryScatter,
 } from 'victory';
 import { EmptyState } from '../../components/EmptyState';
