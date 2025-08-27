@@ -23,6 +23,7 @@ export default function AddShiftScreen() {
   const [overrideAmt, setOverrideAmt] = useState<string>(''); // optional
   const [baseWage, setBaseWage] = useState<string>(''); // required per shift (no default)
   const [notes, setNotes] = useState<string>('');
+  const [defaultWagePlaceholder, setDefaultWagePlaceholder] = useState<string>('15.00');
 
   useEffect(() => {
     const s = getAll();
@@ -32,6 +33,10 @@ export default function AddShiftScreen() {
     }
     if (typeof s.defaultTipOutPercent === 'number' && s.defaultTipOutPercent >= 0 && s.defaultTipOutPercent <= 100) {
       setPct(String(s.defaultTipOutPercent));
+    }
+    // Set default wage placeholder from settings
+    if (typeof s.defaultHourlyWage === 'number' && s.defaultHourlyWage >= 0) {
+      setDefaultWagePlaceholder(s.defaultHourlyWage.toFixed(2));
     }
     // Prefill last wage if enabled
     if (s.rememberLastWage && s.lastWage != null) {
@@ -216,7 +221,7 @@ export default function AddShiftScreen() {
         <TextInput
           value={baseWage}
           onChangeText={(v) => setBaseWage(sanitize(v))}
-          placeholder="5"
+          placeholder={defaultWagePlaceholder}
           keyboardType="decimal-pad"
           inputMode="decimal"
         />
