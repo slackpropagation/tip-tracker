@@ -289,6 +289,9 @@ export default function InsightsScreen() {
         />
       )}
 
+      {/* Debug logging */}
+      {console.log('[DEBUG] Insights - loading:', loading, 'rows.length:', rows.length, 'filtered.length:', filtered.length, 'should show empty state:', !loading && filtered.length === 0)}
+
       {/* Show metrics and charts only when there's data */}
       {filtered.length > 0 && (
         <>
