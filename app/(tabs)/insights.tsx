@@ -460,43 +460,357 @@ export default function InsightsScreen() {
 
               {V && (
                 <>
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
-                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
-                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+              {/* Enhanced Daily Earnings Trend */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily Earnings Trend</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Your effective hourly rate over time
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 16, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    tickFormat={(t: string) => t} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, angle: 0, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryArea
+                    data={dailySeries}
+                    x="x"
+                    y="eff"
+                    style={{
+                      data: {
+                        fill: "url(#gradient)",
+                        fillOpacity: 0.3,
+                        stroke: "#2f95dc",
+                        strokeWidth: 3
+                      }
+                    }}
+                  />
+                  <V.VictoryLine
+                    data={dailySeries}
+                    x="x"
+                    y="eff"
+                    style={{
+                      data: {
+                        stroke: "#2f95dc",
+                        strokeWidth: 3
+                      }
+                    }}
+                    interpolation="monotoneX"
+                  />
+                  <V.VictoryScatter
+                    data={dailySeries}
+                    x="x"
+                    y="eff"
+                    size={4}
+                    style={{
+                      data: {
+                        fill: "#2f95dc",
+                        stroke: "white",
+                        strokeWidth: 2
+                      }
+                    }}
+                  />
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#2f95dc" stopOpacity="0.8"/>
+                      <stop offset="100%" stopColor="#2f95dc" stopOpacity="0.1"/>
+                    </linearGradient>
+                  </defs>
                 </V.VictoryChart>
               </View>
 
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
-                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryGroup>
-                    <V.VictoryBar data={dailySeries} x="x" y="tips" />
-                  </V.VictoryGroup>
+              {/* Enhanced Daily Tips Breakdown */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily Tips Breakdown</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Cash + Card tips by day
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 16, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    tickFormat={(t: string) => t} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryBar
+                    data={dailySeries}
+                    x="x"
+                    y="tips"
+                    style={{
+                      data: {
+                        fill: "url(#barGradient)",
+                        stroke: "#28a745",
+                        strokeWidth: 1
+                      }
+                    }}
+                    cornerRadius={4}
+                  />
+                  <defs>
+                    <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#28a745" stopOpacity="1"/>
+                      <stop offset="100%" stopColor="#20c997" stopOpacity="0.8"/>
+                    </linearGradient>
+                  </defs>
                 </V.VictoryChart>
               </View>
 
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly avg effective $/hr</Text>
-                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryLine data={weeklySeries} x="x" y="eff" interpolation="monotoneX" />
+              {/* Enhanced Weekly Performance */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly Performance Overview</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Average effective hourly rate by week
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 16, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    tickFormat={(t: string) => t} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryArea
+                    data={weeklySeries}
+                    x="x"
+                    y="eff"
+                    style={{
+                      data: {
+                        fill: "url(#weeklyGradient)",
+                        fillOpacity: 0.4,
+                        stroke: "#ff6b6b",
+                        strokeWidth: 3
+                      }
+                    }}
+                  />
+                  <V.VictoryLine
+                    data={weeklySeries}
+                    x="x"
+                    y="eff"
+                    style={{
+                      data: {
+                        stroke: "#ff6b6b",
+                        strokeWidth: 3
+                      }
+                    }}
+                    interpolation="monotoneX"
+                  />
+                  <V.VictoryScatter
+                    data={weeklySeries}
+                    x="x"
+                    y="eff"
+                    size={5}
+                    style={{
+                      data: {
+                        fill: "#ff6b6b",
+                        stroke: "white",
+                        strokeWidth: 2
+                      }
+                    }}
+                  />
+                  <defs>
+                    <linearGradient id="weeklyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#ff6b6b" stopOpacity="0.8"/>
+                      <stop offset="100%" stopColor="#ff6b6b" stopOpacity="0.1"/>
+                    </linearGradient>
+                  </defs>
                 </V.VictoryChart>
               </View>
 
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly tips total (cash + card)</Text>
-                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-                  <V.VictoryGroup>
-                    <V.VictoryBar data={weeklySeries} x="x" y="tips" />
-                  </V.VictoryGroup>
+              {/* Enhanced Weekly Tips Trend */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly Tips Trend</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Total tips earned per week
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 16, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    tickFormat={(t: string) => t} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryBar
+                    data={weeklySeries}
+                    x="x"
+                    y="tips"
+                    style={{
+                      data: {
+                        fill: "url(#tipsGradient)",
+                        stroke: "#fd7e14",
+                        strokeWidth: 3
+                      }
+                    }}
+                    cornerRadius={4}
+                  />
+                  <defs>
+                    <linearGradient id="tipsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#fd7e14" stopOpacity="1"/>
+                      <stop offset="100%" stopColor="#ffc107" stopOpacity="0.8"/>
+                    </linearGradient>
+                  </defs>
+                </V.VictoryChart>
+              </View>
+
+              {/* Shift Type Performance Comparison */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Shift Type Performance</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  Average earnings by shift type
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 24, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryBar
+                    data={Object.entries(heatmapData).reduce((acc, [dow, shifts]) => {
+                      Object.entries(shifts).forEach(([shift, data]) => {
+                        if (data.totalShifts > 0) {
+                          acc.push({
+                            x: `${dow} ${shift}`,
+                            y: data.avgEffHourly,
+                            fill: data.confidence === 'High' ? '#28a745' : 
+                                  data.confidence === 'Medium' ? '#ffc107' : '#dc3545'
+                          });
+                        }
+                      });
+                      return acc;
+                    }, [] as Array<{x: string, y: number, fill: string}>)}
+                    x="x"
+                    y="y"
+                    style={{
+                      data: {
+                        fill: ({ datum }: any) => datum.fill,
+                        stroke: "#333",
+                        strokeWidth: 1
+                      }
+                    }}
+                    cornerRadius={4}
+                  />
+                </V.VictoryChart>
+              </View>
+
+              {/* Earnings Breakdown Waterfall */}
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Earnings Breakdown</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
+                  How your gross earnings are composed
+                </Text>
+                <V.VictoryChart 
+                  domainPadding={{ x: 16, y: 12 }}
+                  height={200}
+                  style={{
+                    background: { fill: '#f8f9fa' }
+                  }}
+                >
+                  <V.VictoryAxis 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryAxis 
+                    dependentAxis 
+                    tickFormat={(t: number) => `$${t}`} 
+                    style={{ 
+                      tickLabels: { fontSize: 10, fill: '#666' },
+                      axis: { stroke: '#ddd' }
+                    }} 
+                  />
+                  <V.VictoryBar
+                    data={[
+                      { x: 'Base Tips', y: metrics.tipsBase, fill: '#28a745' },
+                      { x: 'Tip-out', y: -metrics.tipOut, fill: '#dc3545' },
+                      { x: 'Net Tips', y: metrics.netTips, fill: '#20c997' },
+                      { x: 'Wages', y: metrics.wages, fill: '#fd7e14' },
+                      { x: 'Gross Total', y: metrics.gross, fill: '#2f95dc' }
+                    ]}
+                    x="x"
+                    y="y"
+                    style={{
+                      data: {
+                        fill: ({ datum }: any) => datum.fill,
+                        stroke: "#333",
+                        strokeWidth: 1
+                      }
+                    }}
+                    cornerRadius={4}
+                  />
                 </V.VictoryChart>
               </View>
               </>
