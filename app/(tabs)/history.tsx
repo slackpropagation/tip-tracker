@@ -135,24 +135,28 @@ export default function HistoryScreen() {
       sales: item.sales,
       tip_out_override_amount: item.tip_out_override_amount,
     });
+    
+    const handlePress = () => {
+      router.push(`/shift/${item.id}`);
+    };
+    
     return (
       <Swipeable renderRightActions={() => renderRightActions(item.id)} overshootRight={false} friction={2}>
         <Pressable
+          onPress={handlePress}
           onLongPress={() => confirmAndDelete(item.id)}
           delayLongPress={400}
           style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
         >
-          <Link href={`/shift/${item.id}`} asChild>
-            <Pressable style={{ flex: 1 }}>
-              <Text style={{ fontWeight: '600' }}>
-                {item.date} • {item.shift_type}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
-                <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
-                <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
-              </View>
-            </Pressable>
-          </Link>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontWeight: '600' }}>
+              {item.date} • {item.shift_type}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
+              <Text>Net tips: ${m.net_tips.toFixed(2)}</Text>
+              <Text>Eff/hr: ${m.effective_hourly.toFixed(2)}</Text>
+            </View>
+          </View>
         </Pressable>
       </Swipeable>
     );
