@@ -55,26 +55,45 @@ export default function HistoryScreen() {
   );
 
   const confirmAndDelete = useCallback((id: string) => {
+    console.log('confirmAndDelete called with ID:', id);
     const row = rows.find(r => r.id === id) || null;
+    console.log('Found row to delete:', row);
 
     const reallyDelete = async () => {
-      console.log('Deleting shift with ID:', id);
+      console.log('reallyDelete function called - starting deletion');
       try {
+        console.log('Calling deleteShift with ID:', id);
         await deleteShift(id);
-        console.log('Shift deleted successfully');
+        console.log('deleteShift completed successfully');
+        
+        console.log('Setting lastDeleted state');
         setLastDeleted(row);
+        
+        console.log('Setting undoVisible to true');
         setUndoVisible(true);
+        
+        console.log('Showing success toast');
         showToast('Shift deleted successfully! 🗑️', 'success');
+        
+        console.log('Reloading data');
         await load();
+        
+        console.log('Setting up auto-hide timer');
         // auto-hide after 4s
         try { if (undoHandle) clearTimeout(undoHandle); } catch {}
-        undoHandle = undoTimer.setTimeout(() => setUndoVisible(false), 4000);
+        undoHandle = undoTimer.setTimeout(() => {
+          console.log('Auto-hiding undo modal');
+          setUndoVisible(false);
+        }, 4000);
+        
+        console.log('Delete process completed successfully');
       } catch (error) {
-        console.error('Error deleting shift:', error);
+        console.error('Error in reallyDelete:', error);
         showToast('Failed to delete shift', 'error');
       }
     };
 
+    console.log('Showing confirmation dialog');
     showConfirm(
       'Delete Shift',
       'Are you sure you want to delete this shift?',
@@ -85,7 +104,7 @@ export default function HistoryScreen() {
         destructive: true
       }
     );
-  }, [rows, load, showConfirm]);
+  }, [rows, load, showConfirm, showToast]);
 
   const handleUndo = useCallback(async () => {
     if (!lastDeleted) return;
@@ -112,7 +131,10 @@ export default function HistoryScreen() {
 
   const renderRightActions = (id: string) => (
     <Pressable
-      onPress={() => confirmAndDelete(id)}
+      onPress={() => {
+        console.log('Delete button pressed for ID:', id);
+        confirmAndDelete(id);
+      }}
       style={{
         width: 96,
         backgroundColor: '#b00020',
@@ -144,7 +166,10 @@ export default function HistoryScreen() {
       <Swipeable renderRightActions={() => renderRightActions(item.id)} overshootRight={false} friction={2}>
         <Pressable
           onPress={handlePress}
-          onLongPress={() => confirmAndDelete(item.id)}
+          onLongPress={() => {
+            console.log('Long press detected for shift ID:', item.id);
+            confirmAndDelete(item.id);
+          }}
           delayLongPress={400}
           style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: '#eee' }}
         >
