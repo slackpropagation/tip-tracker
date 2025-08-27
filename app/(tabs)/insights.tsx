@@ -470,7 +470,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
@@ -488,19 +487,6 @@ export default function InsightsScreen() {
                       axis: { stroke: '#ddd' }
                     }} 
                   />
-                  <V.VictoryArea
-                    data={dailySeries}
-                    x="x"
-                    y="eff"
-                    style={{
-                      data: {
-                        fill: "url(#gradient)",
-                        fillOpacity: 0.3,
-                        stroke: "#2f95dc",
-                        strokeWidth: 3
-                      }
-                    }}
-                  />
                   <V.VictoryLine
                     data={dailySeries}
                     x="x"
@@ -508,7 +494,7 @@ export default function InsightsScreen() {
                     style={{
                       data: {
                         stroke: "#2f95dc",
-                        strokeWidth: 3
+                        strokeWidth: 4
                       }
                     }}
                     interpolation="monotoneX"
@@ -517,7 +503,7 @@ export default function InsightsScreen() {
                     data={dailySeries}
                     x="x"
                     y="eff"
-                    size={4}
+                    size={5}
                     style={{
                       data: {
                         fill: "#2f95dc",
@@ -526,12 +512,18 @@ export default function InsightsScreen() {
                       }
                     }}
                   />
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#2f95dc" stopOpacity="0.8"/>
-                      <stop offset="100%" stopColor="#2f95dc" stopOpacity="0.1"/>
-                    </linearGradient>
-                  </defs>
+                  <V.VictoryScatter
+                    data={dailySeries}
+                    x="x"
+                    y="eff"
+                    size={8}
+                    style={{
+                      data: {
+                        fill: "#2f95dc",
+                        fillOpacity: 0.2
+                      }
+                    }}
+                  />
                 </V.VictoryChart>
               </View>
 
@@ -545,7 +537,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
@@ -569,7 +560,7 @@ export default function InsightsScreen() {
                     y="tips"
                     style={{
                       data: {
-                        fill: "url(#barGradient)",
+                        fill: "#28a745",
                         stroke: "#28a745",
                         strokeWidth: 1
                       }
@@ -577,10 +568,6 @@ export default function InsightsScreen() {
                     cornerRadius={4}
                   />
                   <defs>
-                    <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#28a745" stopOpacity="1"/>
-                      <stop offset="100%" stopColor="#20c997" stopOpacity="0.8"/>
-                    </linearGradient>
                   </defs>
                 </V.VictoryChart>
               </View>
@@ -595,7 +582,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
@@ -613,19 +599,6 @@ export default function InsightsScreen() {
                       axis: { stroke: '#ddd' }
                     }} 
                   />
-                  <V.VictoryArea
-                    data={weeklySeries}
-                    x="x"
-                    y="eff"
-                    style={{
-                      data: {
-                        fill: "url(#weeklyGradient)",
-                        fillOpacity: 0.4,
-                        stroke: "#ff6b6b",
-                        strokeWidth: 3
-                      }
-                    }}
-                  />
                   <V.VictoryLine
                     data={weeklySeries}
                     x="x"
@@ -633,7 +606,7 @@ export default function InsightsScreen() {
                     style={{
                       data: {
                         stroke: "#ff6b6b",
-                        strokeWidth: 3
+                        strokeWidth: 4
                       }
                     }}
                     interpolation="monotoneX"
@@ -642,7 +615,7 @@ export default function InsightsScreen() {
                     data={weeklySeries}
                     x="x"
                     y="eff"
-                    size={5}
+                    size={6}
                     style={{
                       data: {
                         fill: "#ff6b6b",
@@ -651,12 +624,18 @@ export default function InsightsScreen() {
                       }
                     }}
                   />
-                  <defs>
-                    <linearGradient id="weeklyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#ff6b6b" stopOpacity="0.8"/>
-                      <stop offset="100%" stopColor="#ff6b6b" stopOpacity="0.1"/>
-                    </linearGradient>
-                  </defs>
+                  <V.VictoryScatter
+                    data={weeklySeries}
+                    x="x"
+                    y="eff"
+                    size={10}
+                    style={{
+                      data: {
+                        fill: "#ff6b6b",
+                        fillOpacity: 0.2
+                      }
+                    }}
+                  />
                 </V.VictoryChart>
               </View>
 
@@ -670,7 +649,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
@@ -694,7 +672,7 @@ export default function InsightsScreen() {
                     y="tips"
                     style={{
                       data: {
-                        fill: "url(#tipsGradient)",
+                        fill: "#fd7e14",
                         stroke: "#fd7e14",
                         strokeWidth: 3
                       }
@@ -702,10 +680,6 @@ export default function InsightsScreen() {
                     cornerRadius={4}
                   />
                   <defs>
-                    <linearGradient id="tipsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#fd7e14" stopOpacity="1"/>
-                      <stop offset="100%" stopColor="#ffc107" stopOpacity="0.8"/>
-                    </linearGradient>
                   </defs>
                 </V.VictoryChart>
               </View>
@@ -720,7 +694,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 24, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
@@ -775,7 +748,6 @@ export default function InsightsScreen() {
                   domainPadding={{ x: 16, y: 12 }}
                   height={200}
                   style={{
-                    background: { fill: '#f8f9fa' }
                   }}
                 >
                   <V.VictoryAxis 
