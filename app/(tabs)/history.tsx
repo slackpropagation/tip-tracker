@@ -224,12 +224,8 @@ export default function HistoryScreen() {
         {rows.length > 0 && (
           <Pressable
             onPress={() => {
-              console.log('Direct delete test - calling deleteShift directly');
-              deleteShift(rows[0].id).then(() => {
-                console.log('Direct delete completed');
-                console.log('Now calling load()');
-                load();
-              });
+              console.log('Direct delete test - calling confirmAndDelete directly');
+              confirmAndDelete(rows[0].id);
             }}
             style={{
               backgroundColor: '#ff6b6b',
