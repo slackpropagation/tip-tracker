@@ -333,9 +333,6 @@ export default function InsightsScreen() {
         <VictoryChart 
           domainPadding={{ x: 16, y: 12 }}
           height={200}
-          style={{
-            background: { fill: '#f8f9fa' }
-          }}
         >
           <VictoryAxis 
             tickFormat={(t: string) => t} 
@@ -352,16 +349,41 @@ export default function InsightsScreen() {
               axis: { stroke: '#ddd' }
             }} 
           />
-          <VictoryArea
+          <VictoryLine
             data={dailySeries}
             x="x"
             y="eff"
             style={{
               data: {
-                fill: "#2f95dc",
-                fillOpacity: 0.3,
                 stroke: "#2f95dc",
                 strokeWidth: 3
+              }
+            }}
+            interpolation="monotoneX"
+          />
+          <VictoryScatter
+            data={dailySeries}
+            x="x"
+            y="eff"
+            size={5}
+            style={{
+              data: {
+                fill: "#2f95dc",
+                stroke: "white",
+                strokeWidth: 2
+              }
+            }}
+          />
+          <VictoryScatter
+            data={dailySeries}
+            x="x"
+            y="eff"
+            size={8}
+            style={{
+              data: {
+                fill: "#2f95dc",
+                stroke: "white",
+                strokeWidth: 1
               }
             }}
           />
@@ -402,9 +424,6 @@ export default function InsightsScreen() {
         <VictoryChart 
           domainPadding={{ x: 16, y: 12 }}
           height={200}
-          style={{
-            background: { fill: '#f8f9fa' }
-          }}
         >
           <VictoryAxis 
             tickFormat={(t: string) => t} 
@@ -418,19 +437,31 @@ export default function InsightsScreen() {
             tickFormat={(t: number) => `$${t}`} 
             style={{ 
               tickLabels: { fontSize: 10, fill: '#666' },
-              axis: { stroke: '#ddd' }
+              axis: { stroke: '#666' }
             }} 
           />
-          <VictoryArea
+          <VictoryLine
             data={weeklySeries}
             x="x"
             y="eff"
             style={{
               data: {
-                fill: "#ff6b6b",
-                fillOpacity: 0.4,
                 stroke: "#ff6b6b",
                 strokeWidth: 3
+              }
+            }}
+            interpolation="monotoneX"
+          />
+          <VictoryScatter
+            data={weeklySeries}
+            x="x"
+            y="eff"
+            size={6}
+            style={{
+              data: {
+                fill: "#ff6b6b",
+                stroke: "white",
+                strokeWidth: 2
               }
             }}
           />
@@ -471,9 +502,6 @@ export default function InsightsScreen() {
         <VictoryChart 
           domainPadding={{ x: 16, y: 12 }}
           height={200}
-          style={{
-            background: { fill: '#f8f9fa' }
-          }}
         >
           <VictoryAxis 
             tickFormat={(t: string) => t} 
