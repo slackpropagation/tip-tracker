@@ -535,40 +535,7 @@ export default function InsightsScreen() {
         </VictoryChart>
       </View>
 
-      {/* Heatmap: weekday × shift type (avg eff/hr) using bubble chart */}
-      <View style={{ marginTop: 8 }}>
-        <Text style={{ fontWeight: '700', marginBottom: 8 }}>Heatmap: Avg effective $/hr</Text>
-        <VictoryChart domainPadding={{ x: 16, y: 16 }}>
-          <VictoryAxis tickValues={WEEKS as unknown as string[]} />
-          <VictoryAxis dependentAxis tickFormat={(t: string) => t} />
-          <VictoryScatter
-            data={heatmapData.cells.map((c) => ({ x: c.x, y: heatmapData.typeList.indexOf(c.y) + 1, value: c.value, n: c.n }))}
-            size={({ datum }) => (datum.n ? Math.min(20, 6 + datum.n * 2) : 0)}
-            labels={({ datum }) => (datum.value ? `$${datum.value}` : '')}
-            labelComponent={<VictoryLabel dy={2} />}
-            style={{
-              data: {
-                fill: ({ datum }) => {
-                  const v = datum.value || 0;
-                  const clamped = Math.max(0, Math.min(1, v / 60)); // 0–$60/hr
-                  const g = Math.round(80 + clamped * 150);
-                  return `rgb(40, ${g}, 80)`;
-                },
-                stroke: '#333',
-                strokeWidth: 0.25,
-              },
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            tickValues={heatmapData.typeList.map((_, i) => i + 1)}
-            tickFormat={(_t, i) => heatmapData.typeList[i]}
-            style={{ tickLabels: { fontSize: 10 } }}
-          />
-          <VictoryLegend x={0} y={0} orientation="horizontal" gutter={12}
-            data={[{ name: 'bubble size = samples' }, { name: 'color = avg $/hr' }]} />
-        </VictoryChart>
-      </View>
+
 
       {/* Box plots per shift type */}
       <View style={{ marginTop: 8 }}>
@@ -591,77 +558,7 @@ export default function InsightsScreen() {
         </VictoryChart>
       </View>
 
-      {/* Enhanced Day × Shift Heatmap */}
-      <View style={{ marginTop: 16 }}>
-        <Text style={{ fontWeight: '700', marginBottom: 12 }}>Day × Shift Heatmap</Text>
-        <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
-          Average effective hourly rate by day and shift type
-        </Text>
-        
-        {/* Heatmap Grid */}
-        <View style={{ borderWidth: 1, borderColor: '#eee', borderRadius: 8, overflow: 'hidden' }}>
-          {/* Header Row */}
-          <View style={{ flexDirection: 'row', backgroundColor: '#f8f9fa' }}>
-            <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
-              <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>Day</Text>
-            </View>
-            {['Brunch', 'Lunch', 'Dinner'].map(shift => (
-              <View key={shift} style={{ flex: 1, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee' }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{shift}</Text>
-              </View>
-            ))}
-          </View>
-          
-          {/* Data Rows */}
-          {WEEKS.map(dow => (
-            <View key={dow} style={{ flexDirection: 'row' }}>
-              <View style={{ width: 60, padding: 8, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#eee', backgroundColor: '#f8f9fa' }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}>{dow}</Text>
-              </View>
-              {['Brunch', 'Lunch', 'Dinner'].map(shift => {
-                const data = heatmapData.cells.find(c => c.x === dow && c.y === shift);
-                const hasData = data && data.n > 0;
-                const bgColor = hasData ? 
-                  (data.value > 25 ? '#d4edda' : 
-                   data.value > 20 ? '#fff3cd' : 
-                   data.value > 15 ? '#f8d7da' : '#f8f9fa') : '#f8f9fa';
-                
-                return (
-                  <View key={shift} style={{ 
-                    flex: 1, 
-                    padding: 8, 
-                    borderRightWidth: 1, 
-                    borderBottomWidth: 1, 
-                    borderColor: '#eee',
-                    backgroundColor: bgColor,
-                    alignItems: 'center'
-                  }}>
-                    {hasData ? (
-                      <>
-                        <Text style={{ fontSize: 14, fontWeight: '600' }}>${data.value}</Text>
-                        <Text style={{ fontSize: 10, color: '#666' }}>{data.n} shifts</Text>
-                        <View style={{ 
-                          paddingHorizontal: 4, 
-                          paddingVertical: 1, 
-                          borderRadius: 4, 
-                          backgroundColor: confidenceLabel(data.n) === 'High' ? '#28a745' : 
-                                            confidenceLabel(data.n) === 'Medium' ? '#ffc107' : '#dc3545'
-                        }}>
-                          <Text style={{ fontSize: 8, color: 'white', fontWeight: '600' }}>
-                            {confidenceLabel(data.n)}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={{ fontSize: 10, color: '#ccc' }}>—</Text>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          ))}
-        </View>
-      </View>
+
 
       {/* Enhanced Recommendations */}
       <View style={{ marginTop: 16 }}>
