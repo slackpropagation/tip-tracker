@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, Pressable, Platform, Alert } from 'react-native';
+import { View, Text, FlatList, RefreshControl, Pressable, Platform, Alert, Modal } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useFocusEffect, Link } from 'expo-router';
-import { getShifts, deleteShift } from '../../data/db';
+import { getShifts, deleteShift, insertShift } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { useRouter } from 'expo-router';
+import { EmptyState } from '../../components/EmptyState';
 
 type Row = {
   id: string;
@@ -25,6 +26,10 @@ export default function HistoryScreen() {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
+  const [undoVisible, setUndoVisible] = useState(false);
+  const [lastDeleted, setLastDeleted] = useState<Row | null>(null);
+  const undoTimer = (typeof window !== 'undefined') ? (window as any) : ({} as any);
+  let undoHandle: any = null;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,9 +51,16 @@ export default function HistoryScreen() {
   );
 
   const confirmAndDelete = useCallback((id: string) => {
+    const row = rows.find(r => r.id === id) || null;
+
     const reallyDelete = async () => {
       await deleteShift(id);
+      setLastDeleted(row);
+      setUndoVisible(true);
       await load();
+      // auto-hide after 4s
+      try { if (undoHandle) clearTimeout(undoHandle); } catch {}
+      undoHandle = undoTimer.setTimeout(() => setUndoVisible(false), 4000);
     };
 
     if (Platform.OS === 'web') {
@@ -61,7 +73,29 @@ export default function HistoryScreen() {
         { text: 'Delete', style: 'destructive', onPress: reallyDelete },
       ]);
     }
-  }, [load]);
+  }, [rows, load]);
+
+  const handleUndo = useCallback(async () => {
+    if (!lastDeleted) return;
+    const r = lastDeleted;
+    // Reinsert without id (DB will assign a new id)
+    await insertShift({
+      date: r.date,
+      shift_type: r.shift_type,
+      hours_worked: r.hours_worked,
+      cash_tips: r.cash_tips,
+      card_tips: r.card_tips,
+      tip_out_basis: r.tip_out_basis,
+      tip_out_percent: r.tip_out_percent,
+      sales: r.sales,
+      tip_out_override_amount: r.tip_out_override_amount,
+      base_hourly_wage: r.base_hourly_wage,
+      notes: r.notes,
+    } as any);
+    setUndoVisible(false);
+    setLastDeleted(null);
+    await load();
+  }, [lastDeleted, load]);
 
   const renderRightActions = (id: string) => (
     <Pressable
@@ -111,24 +145,39 @@ export default function HistoryScreen() {
 
   if (!loading && rows.length === 0) {
     return (
-      <View style={{ flex:1, alignItems:'center', justifyContent:'center', padding:20 }}>
-        <Text style={{ fontSize:16, marginBottom:8 }}>No shifts yet</Text>
-        <Text style={{ color:'#666', textAlign:'center' }}>
-          Add your first shift from the “Add Shift” tab.
-        </Text>
-      </View>
+      <EmptyState
+        icon="📊"
+        title="No shifts yet"
+        subtitle="Start tracking your earnings by adding your first shift from the 'Add Shift' tab below."
+        tipTitle="💡 Pro tip"
+        tipText="Track every shift to see your earning trends and optimize your schedule!"
+      />
     );
   }
 
   return (
-    <FlatList
-      data={rows}
-      keyExtractor={(it) => it.id}
-      renderItem={renderItem}
-      refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={load} />
-      }
-      contentContainerStyle={{ paddingBottom: 40 }}
-    />
+    <>
+      <FlatList
+        data={rows}
+        keyExtractor={(it) => it.id}
+        renderItem={renderItem}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={load} />
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
+
+      {/* Undo toast */}
+      <Modal transparent visible={undoVisible} animationType="fade" onRequestClose={() => setUndoVisible(false)}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center', padding: 16 }}>
+          <View style={{ width: '100%', maxWidth: 520, borderRadius: 10, padding: 12, backgroundColor: '#333', flexDirection:'row', alignItems:'center', gap:12 }}>
+            <Text style={{ color: 'white', flex: 1 }}>Shift deleted</Text>
+            <Pressable onPress={handleUndo} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, backgroundColor: '#0a84ff' }}>
+              <Text style={{ color: 'white', fontWeight: '700' }}>Undo</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
