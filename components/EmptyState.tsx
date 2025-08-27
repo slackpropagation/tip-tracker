@@ -24,7 +24,8 @@ export function EmptyState({
       flex: 1, 
       alignItems: 'center', 
       justifyContent: 'center', 
-      padding: 32 
+      padding: 32,
+      minHeight: 400 // Ensure minimum height for proper centering
     }}>
       {/* Icon placeholder */}
       <View style={{ 
