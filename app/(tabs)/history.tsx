@@ -43,17 +43,14 @@ export default function HistoryScreen() {
     type: 'info'
   });
   
-  console.log('HistoryScreen render - rows count:', rows.length);
+
 
   const load = useCallback(async () => {
-    console.log('load function called');
     setLoading(true);
     try {
       const data = await getShifts();
-      console.log('getShifts returned:', data.length, 'shifts');
       data.sort((a: Row, b: Row) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
       setRows(data);
-      console.log('setRows called with:', data.length, 'shifts');
     } finally {
       setLoading(false);
     }
@@ -61,7 +58,6 @@ export default function HistoryScreen() {
   
   // Local toast function that doesn't persist across navigation
   const showLocalToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    console.log('showLocalToast called with:', { message, type });
     setLocalToast({ visible: true, message, type });
     
     // Auto-hide after 3 seconds
@@ -81,47 +77,30 @@ export default function HistoryScreen() {
   );
 
   const confirmAndDelete = useCallback((id: string) => {
-    console.log('confirmAndDelete called with ID:', id);
     const row = rows.find(r => r.id === id) || null;
-    console.log('Found row to delete:', row);
 
     const reallyDelete = async () => {
-      console.log('reallyDelete function called - starting deletion');
       try {
-        console.log('Calling deleteShift with ID:', id);
         await deleteShift(id);
-        console.log('deleteShift completed successfully');
-        
-        console.log('Setting lastDeleted state');
         setLastDeleted(row);
-        
-        console.log('Setting undoVisible to true');
         setUndoVisible(true);
         
-        console.log('About to call showLocalToast...');
+        // Show success toast
         showLocalToast('Shift deleted successfully! 🗑️', 'success');
-        console.log('showLocalToast called successfully');
         
-        console.log('Setting up auto-hide timer');
         // auto-hide after 4s
         try { if (undoHandle) clearTimeout(undoHandle); } catch {}
         undoHandle = undoTimer.setTimeout(() => {
-          console.log('Auto-hiding undo modal');
           setUndoVisible(false);
         }, 4000);
         
-        console.log('Reloading data after toast');
         await load();
-        
-        console.log('Delete process completed successfully');
       } catch (error) {
-        console.error('Error in reallyDelete:', error);
+        console.error('Error deleting shift:', error);
         showLocalToast('Failed to delete shift', 'error');
       }
     };
 
-    console.log('Showing confirmation dialog');
-    console.log('showConfirm function:', showConfirm);
     showConfirm(
       'Delete Shift',
       'Are you sure you want to delete this shift?',
@@ -159,10 +138,7 @@ export default function HistoryScreen() {
 
   const renderRightActions = (id: string) => (
     <Pressable
-      onPress={() => {
-        console.log('Delete button pressed for ID:', id);
-        confirmAndDelete(id);
-      }}
+      onPress={() => confirmAndDelete(id)}
       style={{
         width: 96,
         backgroundColor: '#b00020',
@@ -175,8 +151,6 @@ export default function HistoryScreen() {
   );
 
   const renderItem = useCallback(({ item }: { item: Row }) => {
-    console.log('Rendering shift item:', item.id, item.date);
-    
     const m = computeShiftMetrics({
       hours_worked: item.hours_worked,
       cash_tips: item.cash_tips,
@@ -189,7 +163,6 @@ export default function HistoryScreen() {
     });
     
     const handlePress = () => {
-      console.log('Navigating to shift detail:', item.id);
       router.push(`/shift/${item.id}`);
     };
     
