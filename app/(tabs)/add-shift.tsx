@@ -24,6 +24,7 @@ export default function AddShiftScreen() {
   const [baseWage, setBaseWage] = useState<string>(''); // required per shift (no default)
   const [notes, setNotes] = useState<string>('');
   const [defaultWagePlaceholder, setDefaultWagePlaceholder] = useState<string>('15.00');
+  const [showOverrideTooltip, setShowOverrideTooltip] = useState(false);
 
   useEffect(() => {
     const s = getAll();
@@ -203,7 +204,42 @@ export default function AddShiftScreen() {
         <View style={{ marginTop: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
             <Text>Override amount (optional)</Text>
-            <Text style={{ fontSize: 16, color: '#666' }}>ℹ️</Text>
+            <Pressable
+              onHoverIn={() => setShowOverrideTooltip(true)}
+              onHoverOut={() => setShowOverrideTooltip(false)}
+              style={{ position: 'relative' }}
+            >
+              <Text style={{ fontSize: 16, color: '#666', cursor: 'help' }}>ℹ️</Text>
+              {showOverrideTooltip && (
+                <View style={{
+                  position: 'absolute',
+                  bottom: 25,
+                  left: -100,
+                  width: 200,
+                  backgroundColor: '#333',
+                  padding: 8,
+                  borderRadius: 6,
+                  zIndex: 1000,
+                }}>
+                  <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
+                    Manually set tip-out amount instead of using percentage calculation
+                  </Text>
+                  <View style={{
+                    position: 'absolute',
+                    top: 20,
+                    left: 100,
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: 5,
+                    borderRightWidth: 5,
+                    borderTopWidth: 5,
+                    borderLeftColor: 'transparent',
+                    borderRightColor: 'transparent',
+                    borderTopColor: '#333',
+                  }} />
+                </View>
+              )}
+            </Pressable>
           </View>
           <TextInput
             value={overrideAmt}
@@ -212,9 +248,6 @@ export default function AddShiftScreen() {
             keyboardType="decimal-pad"
             inputMode="decimal"
           />
-          <Text style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
-            Manually set tip-out amount instead of using percentage calculation
-          </Text>
         </View>
         <Text style={{ marginTop: 8 }}>Calculated tip-out: ${tipOut.toFixed(2)}</Text>
       </View>
