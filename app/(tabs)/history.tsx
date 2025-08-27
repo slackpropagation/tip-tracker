@@ -94,11 +94,11 @@ export default function HistoryScreen() {
         console.log('Setting undoVisible to true');
         setUndoVisible(true);
         
-        console.log('Showing success toast immediately');
+        console.log('About to call showToast...');
+        console.log('showToast function exists:', typeof showToast === 'function');
         console.log('showToast function:', showToast);
-        console.log('ToastComponent:', ToastComponent);
         showToast('Shift deleted successfully! 🗑️', 'success');
-        console.log('showToast called - checking if toast appears');
+        console.log('showToast called successfully');
         
         // Small delay to ensure toast is visible before any cleanup
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -264,7 +264,9 @@ export default function HistoryScreen() {
         <Pressable
           onPress={() => {
             console.log('Testing toast directly');
+            console.log('showToast function exists:', typeof showToast === 'function');
             showToast('Test toast message! 🧪', 'success');
+            console.log('Test toast showToast called');
           }}
           style={{
             backgroundColor: '#4CAF50',
@@ -304,6 +306,7 @@ export default function HistoryScreen() {
       {/* Debug: Check if ToastComponent is rendered */}
       <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'red', padding: 5 }}>
         <Text style={{ color: 'white', fontSize: 10 }}>Toast Debug: {ToastComponent ? 'Present' : 'Missing'}</Text>
+        <Text style={{ color: 'white', fontSize: 10 }}>showToast: {typeof showToast === 'function' ? 'Function' : 'Missing'}</Text>
       </View>
     </>
   );
