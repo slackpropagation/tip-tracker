@@ -227,6 +227,7 @@ export default function HistoryScreen() {
               console.log('Direct delete test - calling deleteShift directly');
               deleteShift(rows[0].id).then(() => {
                 console.log('Direct delete completed');
+                console.log('Now calling load()');
                 load();
               });
             }}
@@ -241,6 +242,23 @@ export default function HistoryScreen() {
             <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Direct Delete Test</Text>
           </Pressable>
         )}
+        
+        {/* Debug: Test toast directly */}
+        <Pressable
+          onPress={() => {
+            console.log('Testing toast directly');
+            showToast('Test toast message! 🧪', 'success');
+          }}
+          style={{
+            backgroundColor: '#4CAF50',
+            padding: 8,
+            borderRadius: 6,
+            marginTop: 8,
+            alignSelf: 'flex-start'
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '600' }}>🧪 Test Toast</Text>
+        </Pressable>
       </View>
       <FlatList
         data={rows}
