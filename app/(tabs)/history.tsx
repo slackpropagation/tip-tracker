@@ -144,6 +144,7 @@ export default function HistoryScreen() {
   };
 
   if (!loading && rows.length === 0) {
+    console.log('[DEBUG] Showing empty state - loading:', loading, 'rows.length:', rows.length);
     return (
       <EmptyState
         icon="📊"
