@@ -6,6 +6,7 @@ import { getShifts } from '../../data/db';
 import { computeShiftMetrics } from '../../data/calculations';
 import { FilterBar, RangeKey, ShiftKey } from '../../components/FilterBar';
 import { getAll as getAllSettings } from '../../data/settings.web';
+import { EmptyState } from '../../components/EmptyState';
 import {
   VictoryAxis,
   VictoryBar,
@@ -276,7 +277,27 @@ export default function InsightsScreen() {
 
       <FilterBar range={range} setRange={setRange} shift={shift} setShift={setShift} />
 
-      {/* KPI rows */}
+      {/* Empty state for no data */}
+      {!loading && filtered.length === 0 && (
+        <EmptyState
+          icon="📈"
+          title="No insights yet"
+          subtitle={
+            rows.length === 0 
+              ? "Add some shifts to see your earning insights and trends."
+              : "No shifts match your current filters. Try adjusting the date range or shift type."
+          }
+          tipTitle="💡 What you'll see"
+          tipText="Track your best days, shift types, and earning trends over time!"
+          iconBgColor="#fff3cd"
+          iconColor="#856404"
+        />
+      )}
+
+      {/* Show metrics and charts only when there's data */}
+      {filtered.length > 0 && (
+        <>
+          {/* KPI rows */}
       <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
         <Card title="Shifts" value={String(summary.count)} />
         <Card title="Hours" value={summary.hours.toFixed(2)} />
@@ -378,8 +399,10 @@ export default function InsightsScreen() {
             labels={(d: any) => `${d.datum.n} samples`}
             style={{ labels: { fontSize: 9 } }}
           />
-        </VictoryChart>
-      </View>
-    </ScrollView>
-  );
-}
+                 </VictoryChart>
+       </View>
+         </>
+       )}
+     </ScrollView>
+   );
+ }
