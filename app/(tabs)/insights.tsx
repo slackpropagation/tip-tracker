@@ -302,78 +302,80 @@ export default function InsightsScreen() {
               )}
 
               {/* Show metrics and charts only when there's data */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Card title="Shifts" value={String(metrics.count)} />
-            <Card title="Hours" value={String(metrics.hours)} />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Card title="Total tips" value={`$${metrics.tipsBase.toFixed(2)}`} subtitle="Cash + Card" />
-            <Card title="Tip-out total" value={`$${metrics.tipOut.toFixed(2)}`} />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Card title="Net tips" value={`$${metrics.netTips.toFixed(2)}`} />
-            <Card title="Wages" value={`$${metrics.wages.toFixed(2)}`} />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Card title="Gross" value={`$${metrics.gross.toFixed(2)}`} />
-            <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Card title="This week gross" value={`$${metrics.thisWeekGross.toFixed(2)}`} subtitle={sow === 'mon' ? 'Week starts Mon' : 'Week starts Sun'} />
-          </View>
-
-          { !V ? (
-              <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
-                <Text>Loading charts…</Text>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Card title="Shifts" value={String(metrics.count)} />
+                <Card title="Hours" value={String(metrics.hours)} />
               </View>
-            ) : null }
 
-          {V && (
-            <>
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
-            <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-              <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
-              <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
-            </V.VictoryChart>
-          </View>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Card title="Total tips" value={`$${metrics.tipsBase.toFixed(2)}`} subtitle="Cash + Card" />
+                <Card title="Tip-out total" value={`$${metrics.tipOut.toFixed(2)}`} />
+              </View>
 
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
-            <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-              <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryGroup>
-                <V.VictoryBar data={dailySeries} x="x" y="tips" />
-              </V.VictoryGroup>
-            </V.VictoryChart>
-          </View>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Card title="Net tips" value={`$${metrics.netTips.toFixed(2)}`} />
+                <Card title="Wages" value={`$${metrics.wages.toFixed(2)}`} />
+              </View>
 
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly avg effective $/hr</Text>
-            <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-              <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryLine data={weeklySeries} x="x" y="eff" interpolation="monotoneX" />
-            </V.VictoryChart>
-          </View>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Card title="Gross" value={`$${metrics.gross.toFixed(2)}`} />
+                <Card title="Avg eff/hr" value={`$${metrics.avgEffHourly.toFixed(2)}`} />
+              </View>
 
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly tips total (cash + card)</Text>
-            <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
-              <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
-              <V.VictoryGroup>
-                <V.VictoryBar data={weeklySeries} x="x" y="tips" />
-              </V.VictoryGroup>
-            </V.VictoryChart>
-          </View>
-          </>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Card title="This week gross" value={`$${metrics.thisWeekGross.toFixed(2)}`} subtitle={sow === 'mon' ? 'Week starts Mon' : 'Week starts Sun'} />
+              </View>
+
+              { !V ? (
+                  <View style={{ padding: 12, borderWidth: 1, borderColor: '#eee', borderRadius: 8 }}>
+                    <Text>Loading charts…</Text>
+                  </View>
+                ) : null }
+
+              {V && (
+                <>
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Effective $/hr by day</Text>
+                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10, angle: 0 } }} />
+                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryLine data={dailySeries} x="x" y="eff" interpolation="monotoneX" />
+                </V.VictoryChart>
+              </View>
+
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Daily tips (cash + card)</Text>
+                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryGroup>
+                    <V.VictoryBar data={dailySeries} x="x" y="tips" />
+                  </V.VictoryGroup>
+                </V.VictoryChart>
+              </View>
+
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly avg effective $/hr</Text>
+                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryLine data={weeklySeries} x="x" y="eff" interpolation="monotoneX" />
+                </V.VictoryChart>
+              </View>
+
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontWeight: '700', marginBottom: 8 }}>Weekly tips total (cash + card)</Text>
+                <V.VictoryChart domainPadding={{ x: 16, y: 12 }}>
+                  <V.VictoryAxis tickFormat={(t: string) => t} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryAxis dependentAxis tickFormat={(t: number) => `$${t}`} style={{ tickLabels: { fontSize: 10 } }} />
+                  <V.VictoryGroup>
+                    <V.VictoryBar data={weeklySeries} x="x" y="tips" />
+                  </V.VictoryGroup>
+                </V.VictoryChart>
+              </View>
+              </>
+              )}
+            </>
           )}
         </ScrollView>
       )}
