@@ -66,13 +66,18 @@ export default function HistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
-      // Only reset toast if we're not in the middle of a delete operation
-      if (!undoVisible) {
-        console.log('History screen focused - resetting toast state (no active delete)');
-        resetToast();
-      } else {
-        console.log('History screen focused - keeping toast state (active delete in progress)');
-      }
+      // Add a small delay to prevent race conditions with immediate operations
+      const timer = setTimeout(() => {
+        // Only reset toast if we're not in the middle of a delete operation
+        if (!undoVisible) {
+          console.log('History screen focused - resetting toast state (no active delete)');
+          resetToast();
+        } else {
+          console.log('History screen focused - keeping toast state (active delete in progress)');
+        }
+      }, 500); // 500ms delay to allow operations to complete
+      
+      return () => clearTimeout(timer);
     }, [load, undoVisible])
   );
 
