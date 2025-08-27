@@ -93,11 +93,6 @@ export default function InsightsScreen() {
   const sow = getStartOfWeekSetting();
   const thisWeekStartKey = startOfWeek(new Date(), sow).toDateString();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('[DEBUG] Insights component rendered - loading:', loading, 'rows.length:', rows.length);
-  }, [loading, rows.length]);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -120,8 +115,6 @@ export default function InsightsScreen() {
       const result = rows
         .filter(r => isInRange(r.date, range))
         .filter(r => isShiftMatch(r.shift_type, shift));
-      // Debug logging
-      console.log('[DEBUG] Insights - filtered.length:', result.length, 'should show empty state:', !loading && result.length === 0);
       return result;
     },
     [rows, range, shift, loading]
@@ -298,9 +291,6 @@ export default function InsightsScreen() {
           iconColor="#856404"
         />
       )}
-
-      {/* Debug logging */}
-      {console.log('[DEBUG] Insights - loading:', loading, 'rows.length:', rows.length, 'filtered.length:', filtered.length, 'should show empty state:', !loading && filtered.length === 0)}
 
       {/* Show metrics and charts only when there's data */}
       {filtered.length > 0 && (
