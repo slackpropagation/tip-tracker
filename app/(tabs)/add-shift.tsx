@@ -3,7 +3,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-na
 import { useToast } from '../../components/Toast';
 import { computeDerived, computeTipOut } from '../../data/calculations';
 import { insertShift } from '../../data/db';
-import { get, getAll, set } from '../../data/settings.web';
+import { get, getAll, set } from '../../data/settings';
 
 const fieldBox = { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12 };
 const row = { flexDirection: 'row', gap: 12 };
@@ -27,22 +27,25 @@ export default function AddShiftScreen() {
   const [showOverrideTooltip, setShowOverrideTooltip] = useState(false);
 
   useEffect(() => {
-    const s = getAll();
-    // Prefill tip-out defaults
-    if (s.defaultTipOutBasis === 'tips' || s.defaultTipOutBasis === 'sales') {
-      setBasis(s.defaultTipOutBasis);
-    }
-    if (typeof s.defaultTipOutPercent === 'number' && s.defaultTipOutPercent >= 0 && s.defaultTipOutPercent <= 100) {
-      setPct(String(s.defaultTipOutPercent));
-    }
-    // Set default wage placeholder from settings
-    if (typeof s.defaultHourlyWage === 'number' && s.defaultHourlyWage >= 0) {
-      setDefaultWagePlaceholder(s.defaultHourlyWage.toFixed(2));
-    }
-    // Prefill last wage if enabled
-    if (s.rememberLastWage && s.lastWage != null) {
-      setBaseWage(String(s.lastWage));
-    }
+    const loadSettings = async () => {
+      const s = await getAll();
+      // Prefill tip-out defaults
+      if (s.defaultTipOutBasis === 'tips' || s.defaultTipOutBasis === 'sales') {
+        setBasis(s.defaultTipOutBasis);
+      }
+      if (typeof s.defaultTipOutPercent === 'number' && s.defaultTipOutPercent >= 0 && s.defaultTipOutPercent <= 100) {
+        setPct(String(s.defaultTipOutPercent));
+      }
+      // Set default wage placeholder from settings
+      if (typeof s.defaultHourlyWage === 'number' && s.defaultHourlyWage >= 0) {
+        setDefaultWagePlaceholder(s.defaultHourlyWage.toFixed(2));
+      }
+      // Prefill last wage if enabled
+      if (s.rememberLastWage && s.lastWage != null) {
+        setBaseWage(String(s.lastWage));
+      }
+    };
+    loadSettings();
   }, []);
 
   const sanitize = (s: string) => s.replace(/[^\d.,\-]/g, '').replace(',', '.');
@@ -90,11 +93,11 @@ export default function AddShiftScreen() {
     };
     await insertShift(payload);
     // Persist last wage for next time if enabled
-    const remember = get('rememberLastWage');
+    const remember = await get('rememberLastWage');
     if (remember) {
       const wageNum = Number(baseWage);
       if (!Number.isNaN(wageNum) && wageNum >= 0) {
-        set('lastWage', wageNum);
+        await set('lastWage', wageNum);
       }
     }
     // reset minimal fields; keep last shift type/basis/pct for convenience

@@ -1,6 +1,6 @@
 import { View, Text, Button, ScrollView, TextInput, Pressable, Switch, Modal } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
-import { getAll, set, defaults, reset } from '../../data/settings.web';
+import { getAll, set, reset } from '../../data/settings';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
 import { exportCsv } from '../../data/csv.web';
 import { parseCsv, importCsv } from '../../data/csvImport.web';
@@ -17,7 +17,12 @@ export default function SettingsScreen() {
   const toastTimer = useRef<any>(null);
 
   useEffect(() => {
-    setPrefs(getAll());
+    const loadSettings = async () => {
+      const settings = await getAll();
+      setPrefs(settings);
+      setPendingPrefs(settings);
+    };
+    loadSettings();
   }, []);
 
   const update = (key: keyof typeof prefs, value: any) => {
@@ -25,11 +30,11 @@ export default function SettingsScreen() {
     setHasUnsavedChanges(true);
   };
 
-  const applyChanges = () => {
+  const applyChanges = async () => {
     // Save all pending changes to storage
-    Object.entries(pendingPrefs).forEach(([key, value]) => {
-      set(key as any, value);
-    });
+    for (const [key, value] of Object.entries(pendingPrefs)) {
+      await set(key as any, value);
+    }
     // Update the main prefs state
     setPrefs(pendingPrefs);
     setHasUnsavedChanges(false);
