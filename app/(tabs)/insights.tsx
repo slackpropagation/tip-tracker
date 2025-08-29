@@ -2,6 +2,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { EmptyState } from '../../components/EmptyState';
 import type { RangeKey, ShiftKey } from '../../components/FilterBar';
 import { computeShiftMetrics } from '../../data/calculations';
@@ -387,7 +388,7 @@ export default function InsightsScreen() {
   }, [metrics, heatmapData]);
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       {!loading && filtered.length === 0 ? (
         // Use View for empty state to allow proper centering
         <View style={{ flex: 1 }}>
@@ -702,6 +703,6 @@ export default function InsightsScreen() {
           )}
         </ScrollView>
       )}
-    </>
+    </SafeAreaView>
   );
 }

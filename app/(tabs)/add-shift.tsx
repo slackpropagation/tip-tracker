@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useToast } from '../../components/Toast';
 import { computeDerived, computeTipOut } from '../../data/calculations';
 import { insertShift } from '../../data/db';
@@ -107,7 +108,7 @@ export default function AddShiftScreen() {
   };
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         <Text style={{ fontSize: 28, fontWeight: '700' }}>Add Shift</Text>
 
@@ -302,8 +303,8 @@ export default function AddShiftScreen() {
       <Text style={{ color: '#666', fontSize: 12, marginTop: 4 }}>
         {Platform.OS === 'web' ? 'Using web storage (AsyncStorage polyfill)' : 'Using SQLite on device'}
       </Text>
-    </ScrollView>
-    <ToastComponent />
-  </>
+          </ScrollView>
+      <ToastComponent />
+    </SafeAreaView>
   );
 }

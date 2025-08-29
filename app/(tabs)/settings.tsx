@@ -1,4 +1,5 @@
 import { View, Text, Button, ScrollView, TextInput, Pressable, Switch, Modal, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { getAll, set, reset } from '../../data/settings';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
@@ -184,16 +185,19 @@ export default function SettingsScreen() {
   // Show loading state if settings haven't loaded yet
   if (!prefs || !pendingPrefs) {
     return (
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
-        <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
-        <Text>Loading settings...</Text>
-      </ScrollView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
+          <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
+          <Text>Loading settings...</Text>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
-      <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
+        <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <Text style={{ fontSize: 18, fontWeight: '600' }}>Preferences</Text>
         {hasUnsavedChanges && (
@@ -418,5 +422,6 @@ export default function SettingsScreen() {
 
       <Text selectable style={{ marginTop: 12, fontFamily: 'Courier' }}>{log}</Text>
     </ScrollView>
+    </SafeAreaView>
   );
 }

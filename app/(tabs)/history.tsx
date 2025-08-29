@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Modal, Pressable, RefreshControl, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useConfirmDialog } from '../../components/ConfirmDialog';
 import { EmptyState } from '../../components/EmptyState';
@@ -194,7 +195,7 @@ export default function HistoryScreen() {
 
   if (!loading && rows.length === 0) {
     return (
-      <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={{ padding: 16, paddingBottom: 0 }}>
           <Text style={{ fontSize: 28, fontWeight: '700' }}>History</Text>
         </View>
@@ -205,12 +206,12 @@ export default function HistoryScreen() {
           tipTitle="💡 Pro tip"
           tipText="Track every shift to see your earning trends and optimize your schedule!"
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={{ padding: 16, paddingBottom: 0 }}>
         <Text style={{ fontSize: 28, fontWeight: '700' }}>History</Text>
         
@@ -269,6 +270,6 @@ export default function HistoryScreen() {
       </Modal>
       <ConfirmDialogComponent />
 
-    </>
+    </SafeAreaView>
   );
 }
