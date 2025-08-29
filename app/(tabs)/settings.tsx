@@ -7,8 +7,8 @@ import { parseCsv, importCsv } from '../../data/csvImport.web';
 
 export default function SettingsScreen() {
   const [log, setLog] = useState('');
-  const [prefs, setPrefs] = useState(getAll());
-  const [pendingPrefs, setPendingPrefs] = useState(getAll());
+  const [prefs, setPrefs] = useState<any>(null);
+  const [pendingPrefs, setPendingPrefs] = useState<any>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [importInfo, setImportInfo] = useState<{ rows: number; skipped: number; errors: string[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -158,6 +158,16 @@ export default function SettingsScreen() {
     append(`[OK] Imported ${inserted} rows (replace all)`);
   };
 
+  // Show loading state if settings haven't loaded yet
+  if (!prefs || !pendingPrefs) {
+    return (
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
+        <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
+        <Text>Loading settings...</Text>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
       <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 16 }}>Settings</Text>
@@ -169,11 +179,11 @@ export default function SettingsScreen() {
       </View>
       <View style={{ marginBottom: 8 }}>
         <Pressable
-          onPress={() => {
-            reset();
-            const defaults = getAll();
-            setPrefs(defaults);
-            setPendingPrefs(defaults);
+          onPress={async () => {
+            await reset();
+            const settings = await getAll();
+            setPrefs(settings);
+            setPendingPrefs(settings);
             setHasUnsavedChanges(false);
           }}
           style={{
@@ -206,7 +216,7 @@ export default function SettingsScreen() {
       <Text style={{ marginTop: 12 }}>Default Tip-Out Percent</Text>
       <TextInput
         keyboardType="numeric"
-        value={String(pendingPrefs.defaultTipOutPercent ?? defaults.defaultTipOutPercent)}
+        value={String(pendingPrefs?.defaultTipOutPercent ?? 3)}
         onChangeText={(txt) => {
           const n = Number(txt.replace(',', '.'));
           if (!Number.isNaN(n) && n >= 0 && n <= 100) update('defaultTipOutPercent', n);
@@ -218,7 +228,7 @@ export default function SettingsScreen() {
       <Text style={{ marginTop: 12 }}>Default Hourly Wage</Text>
       <TextInput
         keyboardType="numeric"
-        value={String(pendingPrefs.defaultHourlyWage ?? defaults.defaultHourlyWage)}
+        value={String(pendingPrefs?.defaultHourlyWage ?? 15.00)}
         onChangeText={(txt) => {
           const n = Number(txt.replace(',', '.'));
           if (!Number.isNaN(n) && n >= 0) update('defaultHourlyWage', n);
