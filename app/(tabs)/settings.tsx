@@ -1,9 +1,12 @@
-import { View, Text, Button, ScrollView, TextInput, Pressable, Switch, Modal } from 'react-native';
+import { View, Text, Button, ScrollView, TextInput, Pressable, Switch, Modal, Platform } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { getAll, set, reset } from '../../data/settings';
 import { initDB, seedSampleData, getShifts, deleteAllShifts } from '../../data/db';
-import { exportCsv } from '../../data/csv.web';
-import { parseCsv, importCsv } from '../../data/csvImport.web';
+// Platform-specific CSV imports
+const isWeb = Platform.OS === 'web';
+const exportCsv = isWeb ? require('../../data/csv.web').exportCsv : null;
+const parseCsv = isWeb ? require('../../data/csvImport.web').parseCsv : null;
+const importCsv = isWeb ? require('../../data/csvImport.web').importCsv : null;
 
 export default function SettingsScreen() {
   const [log, setLog] = useState('');
@@ -107,6 +110,10 @@ export default function SettingsScreen() {
   };
 
   const handleExport = async () => {
+    if (!exportCsv) {
+      append('[Info] CSV export is web-only for now.');
+      return;
+    }
     try {
       await exportCsv('tip-tracker.csv');
       append('[OK] Exported CSV (download started)');
@@ -117,6 +124,10 @@ export default function SettingsScreen() {
   };
 
   const handlePickCsv = () => {
+    if (!isWeb) {
+      append('[Info] CSV import is web-only for now.');
+      return;
+    }
     if (typeof window === 'undefined') {
       append('[Info] Import is web-only for now.');
       return;
@@ -125,6 +136,10 @@ export default function SettingsScreen() {
   };
 
   const handleFileChange = async (e: any) => {
+    if (!parseCsv) {
+      append('[Info] CSV parsing is web-only for now.');
+      return;
+    }
     try {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -144,6 +159,10 @@ export default function SettingsScreen() {
   };
 
   const handleImportAppend = async () => {
+    if (!importCsv) {
+      append('[Info] CSV import is web-only for now.');
+      return;
+    }
     const rows = (fileInputRef as any).parsedRows || [];
     if (!rows.length) { append('[Info] No parsed rows to import.'); return; }
     const { inserted } = await importCsv({ mode: 'append', rows });
@@ -151,6 +170,10 @@ export default function SettingsScreen() {
   };
 
   const handleImportReplace = async () => {
+    if (!importCsv) {
+      append('[Info] CSV import is web-only for now.');
+      return;
+    }
     const rows = (fileInputRef as any).parsedRows || [];
     if (!rows.length) { append('[Info] No parsed rows to import.'); return; }
     if (!confirm('Replace ALL existing shifts with the CSV data? This cannot be undone.')) return;
@@ -331,13 +354,15 @@ export default function SettingsScreen() {
           <Text style={{ color: 'white', fontWeight: '700' }}>Import CSV</Text>
         </Pressable>
         {/* @ts-ignore: RN Web allows raw input elements */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,text/csv"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
+        {isWeb && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+        )}
         {importInfo && (
           <View style={{ marginTop: 8 }}>
             <Text>Parsed: {importInfo.rows} valid, {importInfo.skipped} skipped</Text>
